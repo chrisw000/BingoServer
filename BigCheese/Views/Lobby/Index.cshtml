@@ -1,0 +1,74 @@
+﻿@{
+    ViewData["Title"] = "Big Cheese Game Lobby Page";
+}
+
+<div class="text-center">
+    <h1 class="display-4">Big Cheese Game Lobby</h1>
+</div>
+
+<div class="container">
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-2">Username</div>
+        <div class="col-4"><input type="text" id="lobbyUsername" value="@User.Identity?.Name" /></div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <hr />
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-2">Number of cheeses to match</div>
+        <div class="col-4"><input type="text" id="lobbyNewGameCheeseCount" value="9"/> needs to be int32</div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-6">
+            <input type="button" id="lobbyNewGameButton" value="Create New Game" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <hr />
+    </div>
+</div>
+
+<div class="container">
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-2">Game Id</div>
+        <div class="col-4"><input type="text" id="lobbyJoinGameId" /></div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-6">
+            <input type="button" id="lobbyJoinGameButton" value="Join Game" />
+        </div>
+    </div>
+</div>
+
+<div class="row">
+    <div class="col-12">
+        <hr />
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <div id="gamePulseMessage" />
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <ul id="messagesList"></ul>
+    </div>
+</div>
+
+<script src="~/js/signalr/dist/browser/signalr.js"></script>
+<script src="~/js/lobby.js"></script>
