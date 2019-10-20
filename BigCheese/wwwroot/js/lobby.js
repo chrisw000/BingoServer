@@ -21,6 +21,12 @@ gameConnection.on("LobbyUserJoinedGame", function (user, message, gameId) {
     document.getElementById("messagesList").appendChild(li);
 });
 
+gameConnection.on("LobbyPlayerMessage", function (message) {
+    var li = document.createElement("li");
+    li.textContent = message;
+    document.getElementById("messagesList").appendChild(li);
+});
+
 gameConnection.on("LobbyUpdateGame", function (message) {
     document.getElementById("gamePulseMessage").textContent = message;
 });
