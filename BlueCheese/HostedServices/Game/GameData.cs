@@ -18,7 +18,8 @@ namespace BlueCheese.HostedServices.Game
         public string StartedByUser {get;private set;}
         public int CheeseCount {get;private set;}
 
-        private bool isSpawned = false;
+        private int _gameSize;
+        private bool _isSpawned = false;
         private bool _gameOver = false;
 
         private List<int> _gameNumbers {get; set;}
@@ -34,15 +35,16 @@ namespace BlueCheese.HostedServices.Game
             _logger = logger;            
         }
 
-        public async Task SpawnAsync(string connectionId, string user, int cheeseCount)
+        public async Task SpawnAsync(string connectionId, string user, int cheeseCount, int gameSize)
         {
-            if (isSpawned) throw new InvalidOperationException($"GameData {Key} is already Spawned.");
+            if (_isSpawned) throw new InvalidOperationException($"GameData {Key} is already Spawned.");
 
             Key = Guid.NewGuid();
             Started = DateTime.UtcNow;
             StartedByUser = user;
             CheeseCount = cheeseCount;
-            isSpawned = true;
+            _gameSize = gameSize;
+            _isSpawned = true;
 
             _gameNumbers = ThreadSafeRandom.Pick(75, 75).ToList();
 
@@ -56,13 +58,16 @@ namespace BlueCheese.HostedServices.Game
         {
             _logger.LogInformation("Adding player {user} on {connectionId} to {gameId}", user, connectionId, Key);
 
-            var newPlayer =  new Player(connectionId, user, this.CheeseCount);
+            var newPlayer = new Player(connectionId, user, this.CheeseCount);
 
             if(_players.TryAdd(user, newPlayer))
             {
                 await _lobbyHubContext.Groups.AddToGroupAsync(connectionId, Key.ToString());
 
-                await _lobbyHubContext.Clients.Group(Key.ToString()).LobbyUserJoinedGame(user, $"{connectionId} has joined game with numbers {string.Join(",", newPlayer.Numbers)}", Key);
+                // Tell the player their numbers
+                await _lobbyHubContext.Clients.Client(newPlayer.ConnectionId).LobbyPlayerNumbers(Key, newPlayer.Numbers);
+                // Tell everyone else in the game the text message version
+                await _lobbyHubContext.Clients.GroupExcept(Key.ToString(), newPlayer.ConnectionId).LobbyUserJoinedGame(user, $"joined game with numbers {string.Join(",", newPlayer.Numbers)}", Key);
             }
             else
             {
@@ -78,7 +83,7 @@ namespace BlueCheese.HostedServices.Game
 
             string status;
 
-            if(_players.Keys.Count == 3)
+            if(_players.Keys.Count == _gameSize)
             {
                 _gameNumbers.Shuffle();
 
@@ -91,7 +96,7 @@ namespace BlueCheese.HostedServices.Game
                 {
                     if(p.Value.CheckNumber(number))
                     {
-                        await _lobbyHubContext.Clients.Client(p.Value.ConnectionId).LobbyPlayerMessage($"You have matched {number}");
+                        await _lobbyHubContext.Clients.Client(p.Value.ConnectionId).LobbyPlayerMessage(Key, $"You have matched {number}");
                     }
 
                     if(p.Value.HasWon)
@@ -111,11 +116,10 @@ namespace BlueCheese.HostedServices.Game
             }
             else
             {
-                status = $"Waiting for 3 players... currently there are {_players.Keys.Count} players";
+                status = $"Waiting... got {_players.Keys.Count}/{_gameSize} players...";
             }
 
-
-            await _lobbyHubContext.Clients.Group(Key.ToString()).LobbyUpdateGame($"time: {(DateTime.UtcNow - Started).Seconds} {status}");
+            await _lobbyHubContext.Clients.Group(Key.ToString()).LobbyUpdateGame(Key, $"time: {(DateTime.UtcNow - Started).Seconds} {status}");
         }
     }
 }

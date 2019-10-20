@@ -21,13 +21,19 @@ gameConnection.on("LobbyUserJoinedGame", function (user, message, gameId) {
     document.getElementById("messagesList").appendChild(li);
 });
 
-gameConnection.on("LobbyPlayerMessage", function (message) {
+gameConnection.on("LobbyPlayerNumbers", function (gameId, playerNumbers) {
+    var li = document.createElement("li");
+    li.textContent = "My Numbers are " + playerNumbers.toString();
+    document.getElementById("messagesList").appendChild(li);
+});
+
+gameConnection.on("LobbyPlayerMessage", function (gameId, message) {
     var li = document.createElement("li");
     li.textContent = message;
     document.getElementById("messagesList").appendChild(li);
 });
 
-gameConnection.on("LobbyUpdateGame", function (message) {
+gameConnection.on("LobbyUpdateGame", function (gameId, message) {
     document.getElementById("gamePulseMessage").textContent = message;
 });
 
@@ -40,8 +46,9 @@ gameConnection.start().then(function () {
 
 document.getElementById("lobbyNewGameButton").addEventListener("click", function (event) {
     var user = document.getElementById("lobbyUsername").value;
-    var cheeseCount = document.getElementById("lobbyNewGameCheeseCount").value;
-    gameConnection.invoke("ClientStartedNewGame", user, cheeseCount).catch(function (err) {
+    var cheeseCount = parseInt(document.getElementById("lobbyNewGameCheeseCount").value);
+    var numberOfPlayersRequired = 3;
+    gameConnection.invoke("ClientStartedNewGame", user, cheeseCount, numberOfPlayersRequired).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();

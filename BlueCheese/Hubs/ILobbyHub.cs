@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BlueCheese.Hubs
@@ -7,7 +8,8 @@ namespace BlueCheese.Hubs
     {
         Task LobbyNewGameHasStarted(string user, int cheeseCount, Guid gameId);
         Task LobbyUserJoinedGame(string user, string message, Guid gameId);
-        Task LobbyUpdateGame(string message);
-        Task LobbyPlayerMessage(string v);
+        Task LobbyUpdateGame(Guid gameId, string message);
+        Task LobbyPlayerMessage(Guid gameId, string message);
+        Task LobbyPlayerNumbers(Guid gameId, IReadOnlyList<int> numbers);
     }
 }

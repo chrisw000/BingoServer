@@ -36,9 +36,9 @@ namespace BlueCheese.HostedServices.Game
             _logger.LogTrace("GameManger.DoPeriodicWorkAsync Finished");
         }
 
-        public async Task StartNewGameAsync(string connectionId, string user, int cheeseCount)
+        public async Task StartNewGameAsync(string connectionId, string user, int cheeseCount, int numberOfPlayersRequired)
         {
-            var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, user, cheeseCount);
+            var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, user, cheeseCount, numberOfPlayersRequired);
 
             if(!_games.TryAdd(newGame.Key, newGame))
             {

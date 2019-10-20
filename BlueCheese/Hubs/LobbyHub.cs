@@ -17,16 +17,17 @@ namespace BlueCheese.Hubs
             _logger = logger;
         }
 
-        public async Task ClientStartedNewGame(string user, string cheeseCount)
+        public async Task ClientStartedNewGame(string user, int cheeseCount, int numberOfPlayersRequired)
         {
-            _logger.LogInformation("starting new game {user} {cheeseCount}", user, cheeseCount);
+            _logger.LogInformation("starting new game {user} {cheeseCount} {numberOfPlayersRequired}", user, cheeseCount, numberOfPlayersRequired);
 
-            await _gameManager.StartNewGameAsync(Context.ConnectionId, user, int.Parse(cheeseCount));
+            await _gameManager.StartNewGameAsync(Context.ConnectionId, user, cheeseCount, numberOfPlayersRequired);
         }
 
         public async Task ClientJoinedGame(string user, Guid gameId)
         {
             _logger.LogInformation("joining game {user} {gameId}", user, gameId);
+
             await _gameManager.JoinGameAsync(Context.ConnectionId, user, gameId);
         }
     }

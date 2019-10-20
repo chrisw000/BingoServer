@@ -11,7 +11,7 @@ namespace BlueCheese.HostedServices.Game
         int CheeseCount {get;}
 
         Task UpdateAsync();
-        Task SpawnAsync(string connectionId, string user, int cheeseCount);
+        Task SpawnAsync(string connectionId, string user, int cheeseCount, int numberOfPlayersRequired);
         Task AddPlayerAsync(string connectionId, string user);
     }
 }

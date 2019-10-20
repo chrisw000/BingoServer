@@ -8,6 +8,6 @@ namespace BlueCheese.HostedServices.Game
         IReadOnlyCollection<IGameData> GameData {get;}
 
         Task JoinGameAsync(string connectionId, string user, System.Guid gameId);
-        Task StartNewGameAsync(string connectionId, string user, int cheeseCount);
+        Task StartNewGameAsync(string connectionId, string user, int cheeseCount, int numberOfPlayersRequired);
     }
 }

@@ -13,10 +13,10 @@ namespace BlueCheese.HostedServices.Game
             _serviceProvider = serviceProvider;
         }
 
-        public async Task<IGameData> SpawnNewGameAsync(string connectionId, string user, int cheeseCount)
+        public async Task<IGameData> SpawnNewGameAsync(string connectionId, string user, int cheeseCount, int numberOfPlayersRequired)
         {
             var g = _serviceProvider.GetRequiredService<IGameData>();
-            await g.SpawnAsync(connectionId, user, cheeseCount);
+            await g.SpawnAsync(connectionId, user, cheeseCount, numberOfPlayersRequired);
 
             return g;
         }
