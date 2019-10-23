@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using BlueCheese.Hubs;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 
 namespace BlueCheese.HostedServices.Game
@@ -8,6 +9,6 @@ namespace BlueCheese.HostedServices.Game
         IReadOnlyCollection<IGameData> GameData {get;}
 
         Task JoinGameAsync(string connectionId, string user, System.Guid gameId);
-        Task StartNewGameAsync(string connectionId, string user, int cheeseCount, int numberOfPlayersRequired);
+        Task StartNewGameAsync(string connectionId, NewGameStarted newGame);
     }
 }

@@ -1,17 +1,18 @@
 ﻿using System;
-using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace BlueCheese.HostedServices.Game
 {
     public interface IGameData
     {
-        Guid Key {get;}
-        DateTime Started {get;}
+        Guid GameId {get;}
+        DateTime StartedUtc {get;}
         string StartedByUser {get;}
         int CheeseCount {get;}
-
-        Task UpdateAsync();
-        Task SpawnAsync(string connectionId, string user, int cheeseCount, int numberOfPlayersRequired);
-        Task AddPlayerAsync(string connectionId, string user);
+        int GameSize {get; }
+        GameStatus Status {get;}
+        int GameRound {get;}
+        IReadOnlyList<int> NumbersDrawn {get;}
+        IReadOnlyList<IPlayerData> Players {get;}
     }
 }

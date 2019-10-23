@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 
 namespace BlueCheese.Hubs
 {
+
     public class LobbyHub : Hub<ILobbyHub>
     {
         private readonly IGameManager _gameManager;
@@ -17,11 +18,11 @@ namespace BlueCheese.Hubs
             _logger = logger;
         }
 
-        public async Task ClientStartedNewGame(string user, int cheeseCount, int numberOfPlayersRequired)
+        public async Task ClientStartedNewGame(NewGameStarted newGame)
         {
-            _logger.LogInformation("starting new game {user} {cheeseCount} {numberOfPlayersRequired}", user, cheeseCount, numberOfPlayersRequired);
+            _logger.LogInformation("starting new game {@newGame}", newGame);
 
-            await _gameManager.StartNewGameAsync(Context.ConnectionId, user, cheeseCount, numberOfPlayersRequired);
+            await _gameManager.StartNewGameAsync(Context.ConnectionId, newGame);
         }
 
         public async Task ClientJoinedGame(string user, Guid gameId)

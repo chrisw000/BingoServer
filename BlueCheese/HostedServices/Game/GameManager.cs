@@ -3,22 +3,23 @@ using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
+using BlueCheese.Hubs;
 using Microsoft.Extensions.Logging;
 
 namespace BlueCheese.HostedServices.Game
 {
     public sealed class GameManager : AbstractHostedServiceProvider, IGameManager
     {
-        private readonly GameDataFactory _gameFactory;
+        private readonly GameFactory _gameFactory;
         private readonly ILogger<GameManager> _logger;
 
-        private readonly ConcurrentDictionary<Guid, IGameData> _games = new ConcurrentDictionary<Guid, IGameData>();
+        private readonly ConcurrentDictionary<Guid, IGame> _games = new ConcurrentDictionary<Guid, IGame>();
         
-        public IReadOnlyCollection<IGameData> GameData => _games.Values.OrderBy(d=>d.Started).ToList();
+        public IReadOnlyCollection<IGameData> GameData => _games.Values.OrderBy(d=>d.StartedUtc).ToList();
 
         public int Delay => (1000 * 1 * 1); // 1 second polling
         
-        public GameManager(GameDataFactory gameFactory, ILogger<GameManager> logger)
+        public GameManager(GameFactory gameFactory, ILogger<GameManager> logger)
         {
             _gameFactory = gameFactory;
             _logger = logger;
@@ -36,13 +37,13 @@ namespace BlueCheese.HostedServices.Game
             _logger.LogTrace("GameManger.DoPeriodicWorkAsync Finished");
         }
 
-        public async Task StartNewGameAsync(string connectionId, string user, int cheeseCount, int numberOfPlayersRequired)
+        public async Task StartNewGameAsync(string connectionId, NewGameStarted newGameStarting)
         {
-            var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, user, cheeseCount, numberOfPlayersRequired);
+            var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, newGameStarting);
 
-            if(!_games.TryAdd(newGame.Key, newGame))
+            if(!_games.TryAdd(newGame.GameId, newGame))
             {
-                _logger.LogError("unable to add new game {gameId} {newGame} for {user} on {connectionID}", newGame.Key, newGame, user, connectionId);
+                _logger.LogError("unable to add new game {gameId} {newGame} for {user} on {connectionID}", newGame.GameId, newGame, newGameStarting.StartedByUser, connectionId);
             }
         }
 

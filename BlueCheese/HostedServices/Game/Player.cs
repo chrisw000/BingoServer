@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace BlueCheese.HostedServices.Game
 {
-    public class Player
+    public class Player : IPlayer
     {
         private readonly int _cheeseCount;
         private int _matchCount;
@@ -11,6 +11,7 @@ namespace BlueCheese.HostedServices.Game
         public IReadOnlyList<int> Numbers {get;}
         public string ConnectionId {get;}
         public string User {get;}
+        public bool HasWon => _cheeseCount == _matchCount;
 
         public Player(string connectionId, string user, int cheeseCount)
         {
@@ -29,9 +30,5 @@ namespace BlueCheese.HostedServices.Game
             }
             return false;
         }
-
-        public bool HasWon => _cheeseCount == _matchCount;
     }
-
-
 }

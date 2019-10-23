@@ -1,4 +1,4 @@
-﻿using System;
+﻿using BlueCheese.HostedServices.Game;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -6,10 +6,10 @@ namespace BlueCheese.Hubs
 {
     public interface ILobbyHub
     {
-        Task LobbyNewGameHasStarted(string user, int cheeseCount, Guid gameId);
-        Task LobbyUserJoinedGame(string user, string message, Guid gameId);
-        Task LobbyUpdateGame(Guid gameId, string message);
-        Task LobbyPlayerMessage(Guid gameId, string message);
-        Task LobbyPlayerNumbers(Guid gameId, IReadOnlyList<int> numbers);
+        Task LobbyNewGameHasStarted(IGameData newGame);
+        Task LobbyUserJoinedGame(IGameData newGame, string user, string message);
+        Task LobbyUpdateGame(IGameData gameData, string message);
+        Task LobbyPlayerMessage(IGameData gameData, string message);
+        Task LobbyPlayerNumbers(IGameData gameData, IReadOnlyList<int> numbers);
     }
 }

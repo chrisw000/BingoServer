@@ -29,8 +29,8 @@ namespace BigCheese
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<GameDataFactory>();
-            services.AddTransient<IGameData, GameData>();
+            services.AddSingleton<GameFactory>();
+            services.AddTransient<IGame, Game>();
             services.AddSingleton<IGameManager, GameManager>();
             services.AddHostedService<HostedService<IGameManager>>();
 
