@@ -1,4 +1,4 @@
-﻿using BlueCheese.HostedServices.Game;
+﻿using BlueCheese.HostedServices.Bingo;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;
@@ -22,14 +22,14 @@ namespace BlueCheese.Hubs
         {
             _logger.LogInformation("starting new game {@newGame}", newGame);
 
-            await _gameManager.StartNewGameAsync(Context.ConnectionId, newGame);
+            await _gameManager.StartNewGameAsync(Context.ConnectionId, newGame).ConfigureAwait(false);
         }
 
         public async Task ClientJoinedGame(string user, Guid gameId)
         {
             _logger.LogInformation("joining game {user} {gameId}", user, gameId);
 
-            await _gameManager.JoinGameAsync(Context.ConnectionId, user, gameId);
+            await _gameManager.JoinGameAsync(Context.ConnectionId, user, gameId).ConfigureAwait(false);
         }
     }
 }

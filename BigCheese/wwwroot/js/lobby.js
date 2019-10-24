@@ -8,51 +8,43 @@ document.getElementById("lobbyJoinGameButton").disabled = true;
 
 gameConnection.on("LobbyNewGameHasStarted", function (gameData) {
     /*
-     * gameData is properties as per BlueCheese.HostedServices.Game.IGameData
+     * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
     console.log(gameData);
 
-    var encodedMsg = "New Game Started: " + JSON.stringify(gameData);
-    var li = document.createElement("li");
-    li.textContent = encodedMsg;
-    document.getElementById("messagesList").appendChild(li);
+    addMessageToUIQueue("New Game Started: " + JSON.stringify(gameData));
 });
 
 gameConnection.on("LobbyUserJoinedGame", function (gameData, user, message) {
     /*
-     * gameData is properties as per BlueCheese.HostedServices.Game.IGameData
+     * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
     console.log(gameData);
-    var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
-    var encodedMsg = user + " joined game " + gameData.gameId + " > " + msg;
-    var li = document.createElement("li");
-    li.textContent = encodedMsg;
-    document.getElementById("messagesList").appendChild(li);
+
+    addMessageToUIQueue(user + " joined game " + gameData.gameId + " > " + message);
 });
 
 gameConnection.on("LobbyPlayerNumbers", function (gameData, playerNumbers) {
      /*
-     * gameData is properties as per BlueCheese.HostedServices.Game.IGameData
+     * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
     console.log(gameData);
-    var li = document.createElement("li");
-    li.textContent = "My Numbers are " + playerNumbers.toString();
-    document.getElementById("messagesList").appendChild(li);
+
+    addMessageToUIQueue("My Numbers are " + playerNumbers.toString());
 });
 
 gameConnection.on("LobbyPlayerMessage", function (gameData, message) {
      /*
-     * gameData is properties as per BlueCheese.HostedServices.Game.IGameData
+     * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
     console.log(gameData);
-    var li = document.createElement("li");
-    li.textContent = message;
-    document.getElementById("messagesList").appendChild(li);
+
+    addMessageToUIQueue(message);
 });
 
 gameConnection.on("LobbyUpdateGame", function (gameData, message) {
      /*
-     * gameData is properties as per BlueCheese.HostedServices.Game.IGameData
+     * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
     console.log(gameData);
     document.getElementById("gamePulseMessage").textContent = message;
@@ -97,3 +89,9 @@ document.getElementById("lobbyJoinGameButton").addEventListener("click", functio
     });
     event.preventDefault();
 });
+
+function addMessageToUIQueue(message) {
+    var li = document.createElement("li");
+    li.textContent = message;
+    document.getElementById("messagesList").appendChild(li);
+}

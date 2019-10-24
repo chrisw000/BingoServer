@@ -14,7 +14,7 @@ using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
 using BlueCheese.HostedServices;
-using BlueCheese.HostedServices.Game;
+using BlueCheese.HostedServices.Bingo;
 
 namespace BigCheese
 {

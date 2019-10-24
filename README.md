@@ -17,3 +17,9 @@
 - See BigCheese/wwwroot/js/lobby.js
 - requires BigCheese/wwwroot/js/dist/browser/signalr.js
 - There is a TypeScript version according to microsoft docs
+
+# REST API
+ - /api/game - list all games
+ - /api/game/WaitingForPlayers - list WaitingForPlayers games
+ - /api/game/Playing - list Playing games
+ - /api/game/Ended - list Ended games

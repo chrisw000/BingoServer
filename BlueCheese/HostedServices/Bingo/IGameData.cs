@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
-namespace BlueCheese.HostedServices.Game
+namespace BlueCheese.HostedServices.Bingo
 {
     public interface IGameData
     {

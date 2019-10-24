@@ -3,7 +3,7 @@ using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Threading.Tasks;
 
-namespace BlueCheese.HostedServices.Game
+namespace BlueCheese.HostedServices.Bingo
 {
     public class GameFactory
     {
@@ -17,7 +17,7 @@ namespace BlueCheese.HostedServices.Game
         public async Task<IGame> SpawnNewGameAsync(string connectionId, NewGameStarted newGameStarting)
         {
             var g = _serviceProvider.GetRequiredService<IGame>();
-            await g.SpawnAsync(connectionId, newGameStarting);
+            await g.SpawnAsync(connectionId, newGameStarting).ConfigureAwait(false);
 
             return g;
         }

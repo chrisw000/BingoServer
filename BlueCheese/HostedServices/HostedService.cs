@@ -27,7 +27,7 @@ namespace BlueCheese.HostedServices
             {
                 _logger.LogInformation("Starting HostedService<{HostedServiceName}>", _typeName);
 
-                await _provider.StartupAsync();
+                await _provider.StartupAsync().ConfigureAwait(false);
 
                 _logger.LogDebug("HostedService<{HostedServiceName}>.StartupAsync complete", _typeName);
 
@@ -49,8 +49,8 @@ namespace BlueCheese.HostedServices
 
                 while (!stoppingToken.IsCancellationRequested)
                 {
-                    await _provider.DoPeriodicWorkAsync();
-                    await Task.Delay(_provider.Delay, stoppingToken);
+                    await _provider.DoPeriodicWorkAsync().ConfigureAwait(false);
+                    await Task.Delay(_provider.Delay, stoppingToken).ConfigureAwait(false);
                 }
 
                 _logger.LogWarning("Stopping HostedService<{HostedServiceName}> background task", _typeName);
@@ -71,8 +71,8 @@ namespace BlueCheese.HostedServices
             try
             {
                 // Run your graceful clean-up actions
-                await _provider.StopAsync(stoppingToken);
-                await base.StopAsync(stoppingToken);
+                await _provider.StopAsync(stoppingToken).ConfigureAwait(false);
+                await base.StopAsync(stoppingToken).ConfigureAwait(false);
             }
             catch (Exception e)
             {

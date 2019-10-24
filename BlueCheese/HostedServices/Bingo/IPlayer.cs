@@ -1,4 +1,4 @@
-﻿namespace BlueCheese.HostedServices.Game
+﻿namespace BlueCheese.HostedServices.Bingo
 {
     public interface IPlayer : IPlayerData
     {

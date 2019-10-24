@@ -1,4 +1,4 @@
-﻿using BlueCheese.HostedServices.Game;
+﻿using BlueCheese.HostedServices.Bingo;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 

@@ -1,11 +1,10 @@
 ﻿using System.Collections.Generic;
 
-namespace BlueCheese.HostedServices.Game
+namespace BlueCheese.HostedServices.Bingo
 {
     public interface IPlayerData
     {
         IReadOnlyList<int> Numbers {get;}
-        string ConnectionId {get;}
         string User {get;}
         bool HasWon {get;}
     }

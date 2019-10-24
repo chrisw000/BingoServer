@@ -1,7 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 
-namespace BlueCheese.HostedServices.Game
+namespace BlueCheese.HostedServices.Bingo
 {
     public class Player : IPlayer
     {

@@ -6,7 +6,7 @@ using System.Threading.Tasks;
 using BlueCheese.Hubs;
 using Microsoft.Extensions.Logging;
 
-namespace BlueCheese.HostedServices.Game
+namespace BlueCheese.HostedServices.Bingo
 {
     public sealed class GameManager : AbstractHostedServiceProvider, IGameManager
     {
@@ -15,7 +15,7 @@ namespace BlueCheese.HostedServices.Game
 
         private readonly ConcurrentDictionary<Guid, IGame> _games = new ConcurrentDictionary<Guid, IGame>();
         
-        public IReadOnlyCollection<IGameData> GameData => _games.Values.OrderBy(d=>d.StartedUtc).ToList();
+        public IEnumerable<IGameData> GameData => _games.Values.OrderBy(d=>d.StartedUtc).ToList();
 
         public int Delay => (1000 * 1 * 1); // 1 second polling
         
@@ -31,7 +31,10 @@ namespace BlueCheese.HostedServices.Game
           
             foreach(var game in _games)
             {
-                await game.Value.UpdateAsync();
+                if(await game.Value.UpdateAsync().ConfigureAwait(false))
+                {
+                    _games.TryRemove(game.Key, out var removed);
+                }
             }
 
             _logger.LogTrace("GameManger.DoPeriodicWorkAsync Finished");
@@ -39,7 +42,9 @@ namespace BlueCheese.HostedServices.Game
 
         public async Task StartNewGameAsync(string connectionId, NewGameStarted newGameStarting)
         {
-            var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, newGameStarting);
+            if(newGameStarting==null) throw new ArgumentNullException(nameof(newGameStarting));
+
+            var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, newGameStarting).ConfigureAwait(false);
 
             if(!_games.TryAdd(newGame.GameId, newGame))
             {
@@ -57,7 +62,7 @@ namespace BlueCheese.HostedServices.Game
             }
             else
             {
-                await game.AddPlayerAsync(connectionId, user);
+                await game.AddPlayerAsync(connectionId, user).ConfigureAwait(false);
             }
         }
     }
