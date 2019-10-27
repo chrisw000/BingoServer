@@ -4,11 +4,17 @@ EXPOSE 80
 EXPOSE 443
 
 FROM mcr.microsoft.com/dotnet/core/sdk:3.0-buster AS build
-WORKDIR /src
-COPY ["BigCheese.csproj", ""]
+
+WORKDIR /src/BlueCheese
+COPY ./BlueCheese/BlueCheese.csproj .
+RUN dotnet restore "./BlueCheese.csproj"
+COPY ./BlueCheese .
+
+WORKDIR /src/BigCheese
+COPY ./BigCheese/BigCheese.csproj .
 RUN dotnet restore "./BigCheese.csproj"
-COPY . .
-WORKDIR "/src/."
+COPY ./BigCheese .
+
 RUN dotnet build "BigCheese.csproj" -c Release -o /app/build
 
 FROM build AS publish
