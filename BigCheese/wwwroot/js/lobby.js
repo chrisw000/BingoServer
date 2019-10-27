@@ -62,14 +62,14 @@ document.getElementById("lobbyNewGameButton").addEventListener("click", function
     var user = document.getElementById("lobbyUsername").value;
     var name = document.getElementById("lobbyNewGameName").value;
     var mode = document.getElementById("lobbyNewGameMode").value;
-    var gameSize = document.getElementById("lobbyNewGameSize").value;   
+    var size = document.getElementById("lobbyNewGameSize").value;   
     var cheeseCount = document.getElementById("lobbyNewGameCheeseCount").value;
 
     var newGame = {
             startedByUser: user,
             name: name,
-            mode: mode,
-            gameSize: parseInt(gameSize),
+            mode: parseInt(mode),
+            size: parseInt(size),
             cheeseCount: parseInt(cheeseCount)
         };
 
@@ -84,7 +84,13 @@ document.getElementById("lobbyNewGameButton").addEventListener("click", function
 document.getElementById("lobbyJoinGameButton").addEventListener("click", function (event) {
     var user = document.getElementById("lobbyUsername").value;
     var gameId = document.getElementById("lobbyJoinGameId").value;
-    gameConnection.invoke("ClientJoinedGame", user, gameId).catch(function (err) {
+
+    var joinGame = {
+        user: user,
+        gameId: gameId
+    };
+
+    gameConnection.invoke("ClientJoinedGame", joinGame).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();

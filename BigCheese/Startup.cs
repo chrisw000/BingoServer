@@ -1,20 +1,17 @@
-using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Threading.Tasks;
 using Microsoft.AspNetCore.Builder;
 using Microsoft.AspNetCore.Identity;
-using Microsoft.AspNetCore.Identity.UI;
 using Microsoft.AspNetCore.Hosting;
-using Microsoft.AspNetCore.HttpsPolicy;
 using Microsoft.EntityFrameworkCore;
 using BigCheese.Data;
 using Microsoft.Extensions.Configuration;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Hosting;
 
+using BlueCheese.Resources;
 using BlueCheese.HostedServices;
 using BlueCheese.HostedServices.Bingo;
+using BlueCheese;
+using Serilog;
 
 namespace BigCheese
 {
@@ -22,6 +19,12 @@ namespace BigCheese
     {
         public Startup(IConfiguration configuration)
         {
+            Log.Logger = new LoggerConfiguration()
+                .ReadFrom.Configuration(configuration)
+                .CreateLogger();
+
+            Log.Information("Starting up");
+
             Configuration = configuration;
         }
 
@@ -32,6 +35,7 @@ namespace BigCheese
             services.AddSingleton<GameFactory>();
             services.AddTransient<IGame, Game>();
             services.AddSingleton<IGameManager, GameManager>();
+            services.AddSingleton<ILocalizerByGameMode, LocalizerByGameMode>();
             services.AddHostedService<HostedService<IGameManager>>();
 
             services.AddDbContext<ApplicationDbContext>(options =>
@@ -44,6 +48,8 @@ namespace BigCheese
             services.AddControllersWithViews();
             services.AddRazorPages();
             services.AddSignalR();
+
+            services.LocalizeBlueCheese();
         }
 
         // This method gets called by the runtime. Use this method to configure the HTTP request pipeline.

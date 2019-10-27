@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BlueCheese.Hubs;
+using EnsureThat;
 using Microsoft.Extensions.Logging;
 
 namespace BlueCheese.HostedServices.Bingo
@@ -43,26 +44,33 @@ namespace BlueCheese.HostedServices.Bingo
         public async Task StartNewGameAsync(string connectionId, NewGameStarted newGameStarting)
         {
             if(newGameStarting==null) throw new ArgumentNullException(nameof(newGameStarting));
-
+            _logger.LogTrace("GameManager.StartNewGame {newGameStarting}", newGameStarting);
+            
             var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, newGameStarting).ConfigureAwait(false);
 
-            if(!_games.TryAdd(newGame.GameId, newGame))
+            if (_games.TryAdd(newGame.GameId, newGame))
+            {
+                _logger.LogDebug("GameManager.StartNewGame {newGame}", newGame);
+            }
+            else
             {
                 _logger.LogError("unable to add new game {gameId} {newGame} for {user} on {connectionID}", newGame.GameId, newGame, newGameStarting.StartedByUser, connectionId);
             }
         }
 
-        public async Task JoinGameAsync(string connectionId, string user, Guid gameId)
+        public async Task JoinGameAsync(JoinGame joinGame)
         {
-            _games.TryGetValue(gameId, out var game);
+            if(joinGame==null) throw new ArgumentNullException(nameof(joinGame));
 
-            if (game == null)
+            _logger.LogTrace("GameManager.JoinGame {@joinGame}", joinGame);
+
+            if(_games.TryGetValue(joinGame.GameId, out var game))
             {
-                _logger.LogWarning("unable to find game {gameId} for {user} on {connectionId}", gameId, user, connectionId);
+                await game.AddPlayerAsync(joinGame).ConfigureAwait(false);
             }
             else
             {
-                await game.AddPlayerAsync(connectionId, user).ConfigureAwait(false);
+                _logger.LogWarning("GameManager.JoinGame unable to join game {@joinGame}", joinGame);
             }
         }
     }

@@ -20,16 +20,20 @@ namespace BlueCheese.Hubs
 
         public async Task ClientStartedNewGame(NewGameStarted newGame)
         {
-            _logger.LogInformation("starting new game {@newGame}", newGame);
+            if(newGame==null) throw new ArgumentNullException(nameof(newGame));
+            _logger.LogInformation("LobbyHub.ClientStartedNewGame {@newGame}", newGame);
 
             await _gameManager.StartNewGameAsync(Context.ConnectionId, newGame).ConfigureAwait(false);
         }
 
-        public async Task ClientJoinedGame(string user, Guid gameId)
+        public async Task ClientJoinedGame(JoinGame joinGame)
         {
-            _logger.LogInformation("joining game {user} {gameId}", user, gameId);
+            if(joinGame==null) throw new ArgumentNullException(nameof(joinGame));
+            joinGame.ConnectionId = Context.ConnectionId;
 
-            await _gameManager.JoinGameAsync(Context.ConnectionId, user, gameId).ConfigureAwait(false);
+            _logger.LogInformation("LobbyHub.ClientJoinedGame {@joinGame}", joinGame);
+
+            await _gameManager.JoinGameAsync(joinGame).ConfigureAwait(false);
         }
     }
 }
