@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace BlueCheese.HostedServices.Bingo
@@ -13,12 +14,13 @@ namespace BlueCheese.HostedServices.Bingo
         public string User {get;}
         public bool HasWon => _cheeseCount == _matchCount;
 
-        public Player(string connectionId, string user, int cheeseCount)
+        public Player(JoinGame joinGame, int cheeseCount)
         {
+            if(joinGame==null) throw new ArgumentNullException(nameof(joinGame));
             _cheeseCount = cheeseCount;
             Numbers = ThreadSafeRandom.Pick(cheeseCount, 75);
-            ConnectionId = connectionId;
-            User = user;
+            ConnectionId = joinGame.ConnectionId;
+            User = joinGame.User;
         }
 
         public bool CheckNumber(int number)

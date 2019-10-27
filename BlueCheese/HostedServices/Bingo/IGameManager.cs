@@ -8,7 +8,7 @@ namespace BlueCheese.HostedServices.Bingo
     {
         IEnumerable<IGameData> GameData {get;}
 
-        Task JoinGameAsync(string connectionId, string user, System.Guid gameId);
+        Task JoinGameAsync(JoinGame joinGame);
         Task StartNewGameAsync(string connectionId, NewGameStarted newGame);
     }
 }
