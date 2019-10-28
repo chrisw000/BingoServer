@@ -75,9 +75,12 @@ document.getElementById("lobbyNewGameButton").addEventListener("click", function
 
     console.log(newGame);
 
-    gameConnection.invoke("ClientStartedNewGame", newGame).catch(function (err) {
+    gameConnection.invoke("ClientStartedNewGame", newGame).then(function (game) {
+        console.log('New game created', game);
+    }).catch(function (err) {
         return console.error(err.toString());
     });
+    
     event.preventDefault();
 });
 
