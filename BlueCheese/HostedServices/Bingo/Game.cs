@@ -86,7 +86,6 @@ namespace BlueCheese.HostedServices.Bingo
             
             await AddPlayerAsync(joinGame).ConfigureAwait(false);
             await _lobbyHubContext.Clients.All.LobbyNewGameHasStarted(this).ConfigureAwait(false);
-            await _lobbyHubContext.Clients.Client(connectionId).LobbyGameCreatedSuccess(this, $"Game with id {GameId} created successfully").ConfigureAwait(false);
         }
 
         public async Task AddPlayerAsync(JoinGame joinGame)
