@@ -1,4 +1,5 @@
-﻿using BlueCheese.Hubs;
+﻿using System;
+using BlueCheese.Hubs;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 
@@ -9,6 +10,7 @@ namespace BlueCheese.HostedServices.Bingo
         IEnumerable<IGameData> GameData {get;}
 
         Task JoinGameAsync(JoinGame joinGame);
-        Task StartNewGameAsync(string connectionId, NewGameStarted newGame);
+        
+        Task<IGame> StartNewGameAsync(string connectionId, NewGameStarted newGame);
     }
 }

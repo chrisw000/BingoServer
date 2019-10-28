@@ -19,6 +19,7 @@ namespace BlueCheese.HostedServices.Bingo
         public DateTime StartedUtc { get; private set; }
         public DateTime EndedUtc { get; private set; }
         public string StartedByUser { get; private set; }
+        public string Name { get; private set; }
         public int CheeseCount { get; private set; }
         public int Size { get; private set; }
         public GameStatus Status { get; private set; } = GameStatus.WaitingForPlayers;
@@ -57,6 +58,8 @@ namespace BlueCheese.HostedServices.Bingo
             StartedByUser = newGameStarting.StartedByUser;
             CheeseCount = newGameStarting.CheeseCount;
             Size = newGameStarting.Size;
+            Name = newGameStarting.Name;
+            
             try{
                 Mode = (GameMode)newGameStarting.Mode;
             } catch
@@ -80,8 +83,10 @@ namespace BlueCheese.HostedServices.Bingo
                 ConnectionId = connectionId,
                 GameId = GameId
             };
+            
             await AddPlayerAsync(joinGame).ConfigureAwait(false);
             await _lobbyHubContext.Clients.All.LobbyNewGameHasStarted(this).ConfigureAwait(false);
+            await _lobbyHubContext.Clients.Client(connectionId).LobbyGameCreatedSuccess(this, $"Game with id {GameId} created successfully").ConfigureAwait(false);
         }
 
         public async Task AddPlayerAsync(JoinGame joinGame)

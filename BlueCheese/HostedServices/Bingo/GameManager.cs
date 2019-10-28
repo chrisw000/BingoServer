@@ -41,7 +41,7 @@ namespace BlueCheese.HostedServices.Bingo
             _logger.LogTrace("GameManger.DoPeriodicWorkAsync Finished");
         }
 
-        public async Task StartNewGameAsync(string connectionId, NewGameStarted newGameStarting)
+        public async Task<IGame> StartNewGameAsync(string connectionId, NewGameStarted newGameStarting)
         {
             if(newGameStarting==null) throw new ArgumentNullException(nameof(newGameStarting));
             _logger.LogTrace("GameManager.StartNewGame {newGameStarting}", newGameStarting);
@@ -56,6 +56,8 @@ namespace BlueCheese.HostedServices.Bingo
             {
                 _logger.LogError("unable to add new game {gameId} {newGame} for {user} on {connectionID}", newGame.GameId, newGame, newGameStarting.StartedByUser, connectionId);
             }
+
+            return newGame;
         }
 
         public async Task JoinGameAsync(JoinGame joinGame)
