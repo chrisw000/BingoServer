@@ -12,6 +12,7 @@ namespace BlueCheese.HostedServices.Bingo
         int Size {get; }
         GameStatus Status {get;}
         GameMode Mode {get;}
+        string Name {get;}
         int GameRound {get;}
         IEnumerable<IDrawData> Numbers {get;}
         IEnumerable<IPlayerData> Players {get;}
