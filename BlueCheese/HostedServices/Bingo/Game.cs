@@ -7,9 +7,7 @@ using BlueCheese.Hubs;
 using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
-using BlueCheese.Resources;
 using System.Globalization;
-using System.Threading;
 
 namespace BlueCheese.HostedServices.Bingo
 {
@@ -24,26 +22,26 @@ namespace BlueCheese.HostedServices.Bingo
         public GameStatus Status { get; private set; } = GameStatus.WaitingForPlayers;
         public GameMode Mode {get; private set;}
         public int GameRound => _drawnNumbers.Count;
-        public IReadOnlyList<string> NumberNames => _numberNames.ToList();
-        public IReadOnlyList<int> NumbersDrawn => _drawnNumbers;
-        public IReadOnlyList<IPlayerData> Players => _players.Values.ToList();
+
+        public IEnumerable<IDrawData> Numbers => _allNumbers;
+        public IEnumerable<int> NumbersDrawn => _drawnNumbers;
+        public IEnumerable<IPlayerData> Players => _players.Values.ToList();
 
         private bool _isSpawned = false;
 
         private List<int> _gameNumbers { get; set; }
         private List<int> _drawnNumbers = new List<int>();
-        private List<string> _numberNames = new List<string>();
 
-        private readonly ConcurrentDictionary<string, Player> _players = new ConcurrentDictionary<string, Player>();
+        private readonly ConcurrentDictionary<Guid, Player> _players = new ConcurrentDictionary<Guid, Player>();
 
         private readonly IHubContext<LobbyHub, ILobbyHub> _lobbyHubContext;
-        private readonly ILocalizerByGameMode _localizer;
+        private readonly NumberCollection _allNumbers;
         private readonly ILogger<Game> _logger;
 
-        public Game(IHubContext<LobbyHub, ILobbyHub> lobbyHubContext, ILocalizerByGameMode localizer, ILogger<Game> logger)
+        public Game(IHubContext<LobbyHub, ILobbyHub> lobbyHubContext, NumberCollection numbers, ILogger<Game> logger)
         {
             _lobbyHubContext = lobbyHubContext;
-            _localizer = localizer;
+            _allNumbers = numbers;
             _logger = logger;
         }
 
@@ -57,20 +55,16 @@ namespace BlueCheese.HostedServices.Bingo
             StartedByUser = newGameStarting.StartedByUser;
             CheeseCount = newGameStarting.CheeseCount;
             Size = newGameStarting.Size;
-            try{
+            try {
                 Mode = (GameMode)newGameStarting.Mode;
-            } catch
-            {
+            } catch {
                 Mode = GameMode.Bingo;
             }
             _isSpawned = true;
 
             var callerCultureInfo = new CultureInfo("en-GB"); // TODO persist to setup game culture
-            Thread.CurrentThread.CurrentUICulture = callerCultureInfo;
-            Thread.CurrentThread.CurrentCulture = callerCultureInfo;
-
-            _numberNames = _localizer.NamesFor(Mode);
-            _gameNumbers = ThreadSafeRandom.Pick(_numberNames.Count-1, _numberNames.Count-1).ToList();
+            _allNumbers.Generate(Mode, callerCultureInfo);
+            _gameNumbers = ThreadSafeRandom.Pick(_allNumbers.CountInUse, _allNumbers.CountInUse).ToList();
 
             _logger.LogInformation("Spawning game {gameId} started on {connectionId} with {@newGameStarting}", GameId, connectionId, newGameStarting);
 
@@ -80,6 +74,7 @@ namespace BlueCheese.HostedServices.Bingo
                 ConnectionId = connectionId,
                 GameId = GameId
             };
+
             await AddPlayerAsync(joinGame).ConfigureAwait(false);
             await _lobbyHubContext.Clients.All.LobbyNewGameHasStarted(this).ConfigureAwait(false);
         }
@@ -88,16 +83,16 @@ namespace BlueCheese.HostedServices.Bingo
         {
             _logger.LogInformation("Game.AddPlayer {@joinGame}", joinGame);
 
-            var newPlayer = new Player(joinGame, CheeseCount);
+            var newPlayer = new Player(joinGame, CheeseCount, _allNumbers);
 
-            if (_players.TryAdd(newPlayer.User, newPlayer))
+            if (_players.TryAdd(newPlayer.Id, newPlayer))
             {
                 await _lobbyHubContext.Groups.AddToGroupAsync(newPlayer.ConnectionId, GameId.ToString()).ConfigureAwait(false);
 
                 // Tell the player their numbers
-                await _lobbyHubContext.Clients.Client(newPlayer.ConnectionId).LobbyPlayerNumbers(this, newPlayer.Numbers).ConfigureAwait(false);
+                await _lobbyHubContext.Clients.Client(newPlayer.ConnectionId).LobbyPlayerNumbers(this, newPlayer).ConfigureAwait(false);
                 // Tell everyone else in the game the text message version
-                await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), newPlayer.ConnectionId).LobbyUserJoinedGame(this, newPlayer.User, $"joined game with numbers {string.Join(",", newPlayer.Numbers)}").ConfigureAwait(false);
+                await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), newPlayer.ConnectionId).LobbyUserJoinedGame(this, newPlayer.User, $"joined game with numbers {string.Join(",", newPlayer.Draws.Select(d=>d.Number))}").ConfigureAwait(false);
             }
             else
             {
@@ -110,7 +105,7 @@ namespace BlueCheese.HostedServices.Bingo
 
         public async Task<bool> UpdateAsync()
         {
-            _logger.LogDebug("Game.Update called {status:G} round: {round} {drawnCount}", Status, GameRound, NumbersDrawn.Count);
+            _logger.LogDebug("Game.Update called {status:G} round: {round}", Status, GameRound);
                 
             if (Status == GameStatus.Ended)
             {
@@ -142,6 +137,7 @@ namespace BlueCheese.HostedServices.Bingo
                     var number = _gameNumbers[0];
                     _gameNumbers.RemoveAt(0);
                     _drawnNumbers.Add(number);
+                    _allNumbers[number].IsMatched(number);
 
                     var winners = string.Empty;
 
@@ -149,13 +145,13 @@ namespace BlueCheese.HostedServices.Bingo
                     {
                         if (p.Value.CheckNumber(number))
                         {
-                            _logger.LogDebug("{user} has matched {number}", p.Value.User, BallName(number));
-                            await _lobbyHubContext.Clients.Client(p.Value.ConnectionId).LobbyPlayerMessage(this, $"You have matched {BallName(number)}").ConfigureAwait(false);
+                            _logger.LogDebug("{user} has matched {number}", p.Value.User, _allNumbers[number].Name);
+                            await _lobbyHubContext.Clients.Client(p.Value.ConnectionId).LobbyPlayerMessage(this, $"You have matched {_allNumbers[number].Name}").ConfigureAwait(false);
                         }
 
                         if (p.Value.HasWon)
                         {
-                            winners += $"{p.Key}! ";
+                            winners += $"{p.Value.User}! ";
                         }
                     }
 
@@ -167,7 +163,7 @@ namespace BlueCheese.HostedServices.Bingo
                         _logger.LogInformation("{status:G} {endUtc} {winners}", Status, EndedUtc, winners);
                     }
 
-                    msg = $"-> {BallName(number)} {winners}";
+                    msg = $"-> {_allNumbers[number].Name} {winners}";
 
                     break;
 
@@ -181,19 +177,6 @@ namespace BlueCheese.HostedServices.Bingo
                 .ConfigureAwait(false);
 
             return false;
-        }
-
-        private string BallName(int number)
-        {
-            try
-            {
-                return $"{_numberNames[number]}";
-            }
-            catch
-            {
-                _logger.LogWarning("Cant find name for {number}", number);
-                return $"{number}";
-            }
         }
     }
 }

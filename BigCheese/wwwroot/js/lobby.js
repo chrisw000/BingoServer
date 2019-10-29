@@ -10,34 +10,35 @@ gameConnection.on("LobbyNewGameHasStarted", function (gameData) {
     /*
      * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
-    console.log(gameData);
-
-    addMessageToUIQueue("New Game Started: " + JSON.stringify(gameData));
+    showJson(gameData);
+    document.getElementById("lobbyJoinGameId").value = gameData.gameId;
+    addMessageToUIQueue("New Game Started: " + gameData.gameId);
 });
 
 gameConnection.on("LobbyUserJoinedGame", function (gameData, user, message) {
     /*
      * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
-    console.log(gameData);
+    showJson(gameData);
 
     addMessageToUIQueue(user + " joined game " + gameData.gameId + " > " + message);
 });
 
-gameConnection.on("LobbyPlayerNumbers", function (gameData, playerNumbers) {
+gameConnection.on("LobbyPlayerNumbers", function (gameData, player) {
      /*
      * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
-    console.log(gameData);
+    showJson(gameData);
+    console.log(player);
 
-    addMessageToUIQueue("My Numbers are " + playerNumbers.toString());
+    addMessageToUIQueue("My Player: " + JSON.stringify(player));
 });
 
 gameConnection.on("LobbyPlayerMessage", function (gameData, message) {
      /*
      * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
-    console.log(gameData);
+    showJson(gameData);
 
     addMessageToUIQueue(message);
 });
@@ -46,8 +47,8 @@ gameConnection.on("LobbyUpdateGame", function (gameData, message) {
      /*
      * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
-    console.log(gameData);
-    document.getElementById("gamePulseMessage").textContent = message;
+    showJson(gameData);
+    document.getElementById("gamePulseMessage").innerHTML = message;
 });
 
 gameConnection.start().then(function () {
@@ -100,4 +101,8 @@ function addMessageToUIQueue(message) {
     var li = document.createElement("li");
     li.textContent = message;
     document.getElementById("messagesList").appendChild(li);
+}
+function showJson(gameData) {
+    console.log(gameData);
+    document.getElementById("gameJson").innerHTML = JSON.stringify(gameData);
 }

@@ -10,7 +10,7 @@
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-2">Username</div>
-        <div class="col-4"><input type="text" id="lobbyUsername" value="@User.Identity?.Name" /></div>
+        <div class="col-6"><input type="text" id="lobbyUsername" value="@User.Identity?.Name" style="width:300px;"/></div>
     </div>
 </div>
 
@@ -24,12 +24,12 @@
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-2">Name</div>
-        <div class="col-4"><input type="text" id="lobbyNewGameName" value="some game name" /></div>
+        <div class="col-6"><input type="text" id="lobbyNewGameName" value="some game name" style="width:300px" /></div>
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-2">Mode</div>
-        <div class="col-4">
+        <div class="col-6">
             <select id="lobbyNewGameMode">
                 <option value="1">Bingo</option>
                 <option value="2">Cheesey</option>
@@ -40,7 +40,7 @@
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-2">Number of cheeses to match</div>
-        <div class="col-4">
+        <div class="col-6">
             <select id="lobbyNewGameCheeseCount">
                 <option>3</option>>
                 <option>5</option>
@@ -53,7 +53,7 @@
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-2">Number of players to start</div>
-        <div class="col-4">
+        <div class="col-6">
             <select id="lobbyNewGameSize">
                 <option selected>3</option>>
                 <option>4</option>
@@ -64,7 +64,7 @@
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-6">
+        <div class="col-8">
             <input type="button" id="lobbyNewGameButton" value="Create New Game" />
         </div>
     </div>
@@ -80,11 +80,11 @@
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-2">Game Id</div>
-        <div class="col-4"><input type="text" id="lobbyJoinGameId" /></div>
+        <div class="col-6"><input type="text" style="width:300px" id="lobbyJoinGameId" /></div>
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-6">
+        <div class="col-8">
             <input type="button" id="lobbyJoinGameButton" value="Join Game" />
         </div>
     </div>
@@ -96,15 +96,20 @@
     </div>
 </div>
 <div class="row">
-    <div class="col-6">
-        <div id="gamePulseMessage" />
+    <div class="col-12">
+        <p id="gamePulseMessage" />
     </div>
 </div>
 <div class="row">
-    <div class="col-6">
+    <div class="col-12">
+        <p id="gameJson">{}</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-12">
         <ul id="messagesList"></ul>
     </div>
 </div>
 
 <script src="~/js/signalr/dist/browser/signalr.js"></script>
-<script src="~/js/lobby.js"></script>
+<script src="~/js/lobby.js" asp-append-version="true"></script>
