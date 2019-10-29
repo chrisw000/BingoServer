@@ -9,10 +9,11 @@ namespace BlueCheese.HostedServices.Bingo
         private readonly int _cheeseCount;
         private List<Draw> _draws = new List<Draw>();
 
+        internal string ConnectionId {get;}
+        
         public IEnumerable<IDrawData> Draws => _draws;
 
-        public Guid Id {get;}
-        public string ConnectionId {get;}
+        public Guid PlayerId {get;}
         public string User {get;}
         public bool HasWon => _cheeseCount == _draws.Count(d=>d.Matched==true);
 
@@ -23,7 +24,7 @@ namespace BlueCheese.HostedServices.Bingo
             if(cheeseCount>=numbers.Count) throw new ArgumentOutOfRangeException(nameof(cheeseCount), "You can't have more cheese than there is in the game.");
             if(cheeseCount<=0) throw new ArgumentOutOfRangeException(nameof(cheeseCount), "You need some cheese in the game to be a player.");
 
-            Id = Guid.NewGuid();
+            PlayerId = Guid.NewGuid();
             ConnectionId = joinGame.ConnectionId;
             User = joinGame.User;
 

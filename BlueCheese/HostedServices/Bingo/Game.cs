@@ -88,12 +88,12 @@ namespace BlueCheese.HostedServices.Bingo
 
             var newPlayer = new Player(joinGame, CheeseCount, _allNumbers);
 
-            if (_players.TryAdd(newPlayer.Id, newPlayer))
+            if (_players.TryAdd(newPlayer.PlayerId, newPlayer))
             {
                 await _lobbyHubContext.Groups.AddToGroupAsync(newPlayer.ConnectionId, GameId.ToString()).ConfigureAwait(false);
 
                 // Tell the player their numbers
-                await _lobbyHubContext.Clients.Client(newPlayer.ConnectionId).LobbyPlayerNumbers(this, newPlayer).ConfigureAwait(false);
+                await _lobbyHubContext.Clients.Client(newPlayer.ConnectionId).LobbyPlayerNumbers(this, newPlayer as IPlayerData).ConfigureAwait(false);
                 // Tell everyone else in the game the text message version
                 await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), newPlayer.ConnectionId).LobbyUserJoinedGame(this, newPlayer.User, $"joined game with numbers {string.Join(",", newPlayer.Draws.Select(d=>d.Number))}").ConfigureAwait(false);
             }
