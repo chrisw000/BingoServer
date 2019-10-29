@@ -33,6 +33,7 @@ namespace BigCheese
         {
             services.AddSingleton<GameFactory>();
             services.AddTransient<IGame, Game>();
+            services.AddTransient<NumberCollection>();
             services.AddSingleton<IGameManager, GameManager>();
             services.AddSingleton<ILocalizerByGameMode, LocalizerByGameMode>();
             services.AddHostedService<HostedService<IGameManager>>();

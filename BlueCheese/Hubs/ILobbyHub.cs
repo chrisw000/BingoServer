@@ -10,6 +10,6 @@ namespace BlueCheese.Hubs
         Task LobbyUserJoinedGame(IGameData newGame, string user, string message);
         Task LobbyUpdateGame(IGameData gameData, string message);
         Task LobbyPlayerMessage(IGameData gameData, string message);
-        Task LobbyPlayerNumbers(IGameData gameData, IReadOnlyList<int> numbers);
+        Task LobbyPlayerNumbers(IGameData gameData, IPlayerData player);
     }
 }

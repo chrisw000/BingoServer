@@ -33,11 +33,11 @@ namespace BlueCheese.Resources
             {
                 GameMode.NotSet => key,
 
-                GameMode.Bingo => $"{key} {_bingo.GetString(key)}",
+                GameMode.Bingo => $"{_bingo.GetString(key)}",
 
-                GameMode.Cheesy => $"{key} {_cheesy.GetString(key)}",
+                GameMode.Cheesy => $"{_cheesy.GetString(key)}",
 
-                GameMode.McCluskyPD => $"{key} {_mcClusky.GetString(key)}",
+                GameMode.McCluskyPD => $"{_mcClusky.GetString(key)}",
 
                 _ => $"{mode:G} {ball} resource not made.",
             };
