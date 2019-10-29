@@ -14,8 +14,8 @@ namespace BlueCheese.HostedServices.Bingo
         GameMode Mode {get;}
         string Name {get;}
         int GameRound {get;}
-        IReadOnlyList<int> NumbersDrawn {get;}
-        IReadOnlyList<string> NumberNames {get;}
-        IReadOnlyList<IPlayerData> Players {get;}
+        IEnumerable<IDrawData> Numbers {get;}
+        IEnumerable<IPlayerData> Players {get;}
+        IEnumerable<int> NumbersDrawn {get;}
     }
 }
