@@ -1,7 +1,10 @@
-﻿namespace BlueCheese.Hubs
+﻿using System;
+
+namespace BlueCheese.Hubs
 {
     public class NewGameStarted {
         public string StartedByUser {get;set;}
+        public Guid PlayerId {get;set;}
         public string Name {get;set;}
         public int Mode {get;set;}
         public int Size {get;set;}

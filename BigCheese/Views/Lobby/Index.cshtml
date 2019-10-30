@@ -10,7 +10,8 @@
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-2">Username</div>
-        <div class="col-6"><input type="text" id="lobbyUsername" value="@User.Identity?.Name" style="width:300px;"/></div>
+        <div class="col-6"><input type="text" id="lobbyUsername" value="" style="width:300px;" /></div>
+        <div class="col-4"><input type="button" id="softLogOnButton" value="Gimmie an id" /></div>
     </div>
 </div>
 
@@ -79,8 +80,13 @@
 <div class="container">
     <div class="row">&nbsp;</div>
     <div class="row">
+        <div class="col-2">Player ID</div>
+        <div class="col-6"><input type="text" style="width:300px" id="playerId" disabled /></div>
+    </div>
+
+    <div class="row">
         <div class="col-2">Game Id</div>
-        <div class="col-6"><input type="text" style="width:300px" id="lobbyJoinGameId" /></div>
+        <div class="col-6"><input type="text" style="width:300px" id="lobbyJoinGameId" disabled/></div>
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">

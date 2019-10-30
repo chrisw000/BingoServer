@@ -11,6 +11,8 @@ using BlueCheese.HostedServices;
 using BlueCheese.HostedServices.Bingo;
 using BlueCheese;
 using Serilog;
+using System;
+using Microsoft.AspNetCore.Http;
 
 namespace BigCheese
 {
@@ -24,7 +26,7 @@ namespace BigCheese
 
             Log.Information("Starting up");
 
-            Configuration = configuration;
+            Configuration = configuration;          
         }
 
         public IConfiguration Configuration { get; }
@@ -44,6 +46,22 @@ namespace BigCheese
 
             services.AddDefaultIdentity<IdentityUser>(options => options.SignIn.RequireConfirmedAccount = true)
                 .AddEntityFrameworkStores<ApplicationDbContext>();
+
+            services.Configure<CookiePolicyOptions>(options =>
+            {
+                options.CheckConsentNeeded = context => true;
+                options.MinimumSameSitePolicy = SameSiteMode.None;
+            });
+
+            services.AddDistributedMemoryCache();
+
+            services.AddSession(options =>
+            {
+                options.Cookie.Name = ".tienda.de.quesos";
+                options.IdleTimeout = TimeSpan.FromMinutes(10);
+                options.Cookie.HttpOnly = true;
+                options.Cookie.IsEssential = true;
+            });
 
             services.AddControllersWithViews();
             services.AddRazorPages();
@@ -81,6 +99,7 @@ namespace BigCheese
 
             app.UseRouting();
 
+            app.UseSession();
             app.UseAuthentication();
             app.UseAuthorization();
 

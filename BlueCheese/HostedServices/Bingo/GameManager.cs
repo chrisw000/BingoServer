@@ -9,10 +9,31 @@ using Microsoft.Extensions.Logging;
 
 namespace BlueCheese.HostedServices.Bingo
 {
+    public interface IEndPlayerInfo
+    {
+        Guid PlayerId {get;}
+        String User {get;}
+    }
+
+    public class EndPlayerInfo : IEndPlayerInfo
+    {
+        public Guid PlayerId {get;private set;}
+        public string User {get;}
+
+        public EndPlayerInfo(Guid playerId, string user)
+        {
+            PlayerId = playerId;
+            User = user;
+        }
+    }
+
     public sealed class GameManager : AbstractHostedServiceProvider, IGameManager
     {
         private readonly GameFactory _gameFactory;
         private readonly ILogger<GameManager> _logger;
+
+        private readonly ConcurrentDictionary<Guid, EndPlayerInfo> _players = new ConcurrentDictionary<Guid, EndPlayerInfo>();
+        private readonly ConcurrentDictionary<string, Guid> _playerUsernames = new ConcurrentDictionary<string, Guid>();
 
         private readonly ConcurrentDictionary<Guid, IGame> _games = new ConcurrentDictionary<Guid, IGame>();
         
@@ -45,6 +66,27 @@ namespace BlueCheese.HostedServices.Bingo
         {
             if(newGameStarting==null) throw new ArgumentNullException(nameof(newGameStarting));
             _logger.LogTrace("GameManager.StartNewGame {newGameStarting}", newGameStarting);
+
+            // Move to object to track these?
+            // Check the user / playerid combo
+            if(_playerUsernames.TryGetValue(newGameStarting.StartedByUser, out var id))
+            {
+                if(id!=newGameStarting.PlayerId)
+                {
+                    return null; // TODO
+                }
+                if(_players.TryGetValue(id, out var endPlayer))
+                {
+                    if(id!=endPlayer.PlayerId) // this 
+                    {
+                        return null; // TODO
+                    }
+                }
+            }
+            else
+            {
+                return null;
+            }
             
             var newGame = await _gameFactory.SpawnNewGameAsync(connectionId, newGameStarting).ConfigureAwait(false);
 
@@ -74,6 +116,26 @@ namespace BlueCheese.HostedServices.Bingo
             {
                 _logger.LogWarning("GameManager.JoinGame unable to join game {@joinGame}", joinGame);
             }
+        }
+
+        public Guid GeneratePlayerId(string username)
+        {
+            var id = Guid.NewGuid();
+            var endPlayerInfo = new EndPlayerInfo(id, username);
+
+            if(_playerUsernames.TryAdd(username, endPlayerInfo.PlayerId))
+            {
+                if(_players.TryAdd(endPlayerInfo.PlayerId, endPlayerInfo)) // TODO identity id & connection id
+                {
+                    return id;  
+                }
+                else
+                {
+                    _playerUsernames.TryRemove(username, out _);
+                }
+            }
+            
+            return Guid.Empty;
         }
     }
 }

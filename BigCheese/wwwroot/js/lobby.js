@@ -61,6 +61,7 @@ gameConnection.start().then(function () {
 document.getElementById("lobbyNewGameButton").addEventListener("click", function (event) {
 
     var user = document.getElementById("lobbyUsername").value;
+    var playerId = document.getElementById("playerId").value;
     var name = document.getElementById("lobbyNewGameName").value;
     var mode = document.getElementById("lobbyNewGameMode").value;
     var size = document.getElementById("lobbyNewGameSize").value;   
@@ -68,6 +69,7 @@ document.getElementById("lobbyNewGameButton").addEventListener("click", function
 
     var newGame = {
             startedByUser: user,
+            playerId: playerId,
             name: name,
             mode: parseInt(mode),
             size: parseInt(size),
@@ -87,10 +89,12 @@ document.getElementById("lobbyNewGameButton").addEventListener("click", function
 
 document.getElementById("lobbyJoinGameButton").addEventListener("click", function (event) {
     var user = document.getElementById("lobbyUsername").value;
+    var playerId = document.getElementById("playerId").value;
     var gameId = document.getElementById("lobbyJoinGameId").value;
 
     var joinGame = {
         user: user,
+        playerId: playerId,
         gameId: gameId
     };
 
@@ -109,3 +113,23 @@ function showJson(gameData) {
     console.log(gameData);
     document.getElementById("gameJson").innerHTML = JSON.stringify(gameData);
 }
+
+//------------------------------------------------------------------------------------
+
+document.getElementById("softLogOnButton").addEventListener("click", function (event) {
+    var user = document.getElementById("lobbyUsername").value;
+
+    var xhttp = new XMLHttpRequest();
+    xhttp.onreadystatechange = function() {
+        if (this.readyState == 4 && this.status == 200) {
+          document.getElementById("playerId").value = this.responseText;
+          document.getElementById("softLogOnButton").disabled = true;
+        }
+      };
+    xhttp.open("POST", "/api/account", true);
+    xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
+    xhttp.send("lobbyUsername="+user).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});

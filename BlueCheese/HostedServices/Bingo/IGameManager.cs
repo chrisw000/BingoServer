@@ -12,5 +12,6 @@ namespace BlueCheese.HostedServices.Bingo
         Task JoinGameAsync(JoinGame joinGame);
         
         Task<IGame> StartNewGameAsync(string connectionId, NewGameStarted newGame);
+        Guid GeneratePlayerId(string username);
     }
 }
