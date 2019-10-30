@@ -15,7 +15,7 @@ gameConnection.on("LobbyNewGameHasStarted", function (gameData) {
     addMessageToUIQueue("New Game Started: " + gameData.gameId);
 });
 
-gameConnection.on("LobbyUserJoinedGame", function (gameData, user, message) {
+gameConnection.on("LobbyUserJoinedGame", function (gameData, message) {
     /*
      * gameData is properties as per BlueCheese.HostedServices.Bingo.IGameData
      */
@@ -68,7 +68,7 @@ document.getElementById("lobbyNewGameButton").addEventListener("click", function
     var cheeseCount = document.getElementById("lobbyNewGameCheeseCount").value;
 
     var newGame = {
-            startedByUser: user,
+            user: user,
             playerId: playerId,
             name: name,
             mode: parseInt(mode),
@@ -122,7 +122,7 @@ document.getElementById("softLogOnButton").addEventListener("click", function (e
     var xhttp = new XMLHttpRequest();
     xhttp.onreadystatechange = function() {
         if (this.readyState == 4 && this.status == 200) {
-          document.getElementById("playerId").value = this.responseText;
+          document.getElementById("playerId").value = JSON.parse(this.responseText).playerId;
           document.getElementById("softLogOnButton").disabled = true;
         }
       };

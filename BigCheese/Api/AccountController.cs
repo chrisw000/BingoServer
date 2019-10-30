@@ -10,12 +10,12 @@ namespace BigCheese.Api
     {
         private const string Cheese = "Manchego";
 
-        private readonly IGameManager _gameManager;
+        private readonly IEndPlayerManager _endPlayerManager;
         private readonly ILogger<AccountController> _logger;
 
-        public AccountController(IGameManager gameManager, ILogger<AccountController> logger)
+        public AccountController(IEndPlayerManager endPlayerManager, ILogger<AccountController> logger)
         {
-            _gameManager = gameManager;
+            _endPlayerManager = endPlayerManager;
             _logger = logger;
         }
 
@@ -24,17 +24,18 @@ namespace BigCheese.Api
         {    
             if (HttpContext.Session.Get<Guid>(Cheese) == default)
             {
-                var id = _gameManager.GeneratePlayerId(lobbyUsername);
+                var endPlayer = _endPlayerManager.SpawnEndPlayer(lobbyUsername);
 
-                if(id!=Guid.Empty) 
+                if(endPlayer==null) 
                 {
-                    HttpContext.Session.Set<Guid>(Cheese, id);                
-                    return Ok(id);
+                    return Forbid();
                 }
+
+                HttpContext.Session.Set<Guid>(Cheese, endPlayer.PlayerId);                
+                return Ok(endPlayer);
             }
 
-            // Either you're trying to select a username twice, or the username is already taken
-            return Forbid(); 
+            return Ok(_endPlayerManager.GetByPlayerId(HttpContext.Session.Get<Guid>(Cheese)));
         }
     }
 }

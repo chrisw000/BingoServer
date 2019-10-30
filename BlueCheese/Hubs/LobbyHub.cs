@@ -18,12 +18,14 @@ namespace BlueCheese.Hubs
             _logger = logger;
         }
 
-        public async Task<IGame> ClientStartedNewGame(NewGameStarted newGame)
+        public async Task ClientStartedNewGame(NewGameStarted newGame)
         {
             if(newGame==null) throw new ArgumentNullException(nameof(newGame));
+            newGame.ConnectionId = Context.ConnectionId;
+
             _logger.LogInformation("LobbyHub.ClientStartedNewGame {@newGame}", newGame);
 
-            return await _gameManager.StartNewGameAsync(Context.ConnectionId, newGame).ConfigureAwait(false);
+            await _gameManager.StartNewGameAsync(newGame).ConfigureAwait(false);
         }
 
         public async Task ClientJoinedGame(JoinGame joinGame)

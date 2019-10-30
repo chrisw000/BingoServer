@@ -46,14 +46,14 @@ namespace BlueCheese.HostedServices.Bingo
             _logger = logger;
         }
 
-        public async Task SpawnAsync(string connectionId, NewGameStarted newGameStarting)
+        public async Task SpawnAsync(NewGameStarted newGameStarting)
         {
             if (newGameStarting == null) throw new ArgumentNullException(nameof(newGameStarting));
             if (_isSpawned) throw new InvalidOperationException($"GameData {GameId} is already Spawned.");
 
             GameId = Guid.NewGuid();
             StartedUtc = DateTime.UtcNow;
-            StartedByUser = newGameStarting.StartedByUser;
+            StartedByUser = newGameStarting.User;
             CheeseCount = newGameStarting.CheeseCount;
             Size = newGameStarting.Size;
             Name = newGameStarting.Name;
@@ -69,12 +69,12 @@ namespace BlueCheese.HostedServices.Bingo
             _allNumbers.Generate(Mode, callerCultureInfo);
             _gameNumbers = ThreadSafeRandom.Pick(_allNumbers.CountInUse, _allNumbers.CountInUse).ToList();
 
-            _logger.LogInformation("Spawning game {gameId} started on {connectionId} with {@newGameStarting}", GameId, connectionId, newGameStarting);
+            _logger.LogInformation("Spawning game {gameId} started on {connectionId} with {@newGameStarting}", GameId, newGameStarting.ConnectionId, newGameStarting);
 
             var joinGame = new JoinGame()
             {
-                User = newGameStarting.StartedByUser,
-                ConnectionId = connectionId,
+                User = newGameStarting.User,
+                ConnectionId = newGameStarting.ConnectionId,
                 GameId = GameId
             };
             
@@ -95,7 +95,7 @@ namespace BlueCheese.HostedServices.Bingo
                 // Tell the player their numbers
                 await _lobbyHubContext.Clients.Client(newPlayer.ConnectionId).LobbyPlayerNumbers(this, newPlayer as IPlayerData).ConfigureAwait(false);
                 // Tell everyone else in the game the text message version
-                await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), newPlayer.ConnectionId).LobbyUserJoinedGame(this, newPlayer.User, $"joined game with numbers {string.Join(",", newPlayer.Draws.Select(d=>d.Number))}").ConfigureAwait(false);
+                await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), newPlayer.ConnectionId).LobbyUserJoinedGame(this, $"{newPlayer.User} joined game with numbers {string.Join(",", newPlayer.Draws.Select(d=>d.Number))}").ConfigureAwait(false);
             }
             else
             {
