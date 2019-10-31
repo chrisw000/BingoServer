@@ -13,24 +13,28 @@
         <div class="col-6"><input type="text" id="lobbyUsername" value="" style="width:300px;" /></div>
         <div class="col-4"><input type="button" id="softLogOnButton" value="Gimmie an id" /></div>
     </div>
-</div>
-
-<div class="row">
-    <div class="col-12">
-        <hr />
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-12">
+            <hr />
+        </div>
     </div>
 </div>
 
-<div class="container">
+
+<div class="container" id="newGateDataEntry" style="display:none">
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-2">Name</div>
-        <div class="col-6"><input type="text" id="lobbyNewGameName" value="some game name" style="width:300px" /></div>
+        <div class="col-4">Name</div>
+        <div class="col-8">
+            <input type="text" id="lobbyNewGameName" value="some game name" style="width:300px" />
+            <input type="button" id="lobbyNewGameButton" value="Create New Game" />
+        </div>
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-2">Mode</div>
-        <div class="col-6">
+        <div class="col-4">Mode</div>
+        <div class="col-8">
             <select id="lobbyNewGameMode">
                 <option value="1">Bingo</option>
                 <option value="2">Cheesey</option>
@@ -40,8 +44,8 @@
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-2">Number of cheeses to match</div>
-        <div class="col-6">
+        <div class="col-4">Number of cheeses to match</div>
+        <div class="col-8">
             <select id="lobbyNewGameCheeseCount">
                 <option>3</option>>
                 <option>5</option>
@@ -53,8 +57,8 @@
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-2">Number of players to start</div>
-        <div class="col-6">
+        <div class="col-4">Number of players to start</div>
+        <div class="col-8">
             <select id="lobbyNewGameSize">
                 <option selected>3</option>>
                 <option>4</option>
@@ -63,36 +67,19 @@
             </select>
         </div>
     </div>
-    <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-8">
-            <input type="button" id="lobbyNewGameButton" value="Create New Game" />
+        <div class="col-12">
+            <hr />
         </div>
     </div>
-</div>
 
-<div class="row">
-    <div class="col-12">
-        <hr />
-    </div>
 </div>
 
 <div class="container">
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-2">Player ID</div>
-        <div class="col-6"><input type="text" style="width:300px" id="playerId" disabled /></div>
-    </div>
-
     <div class="row">
         <div class="col-2">Game Id</div>
-        <div class="col-6"><input type="text" style="width:300px" id="lobbyJoinGameId" disabled/></div>
-    </div>
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-8">
-            <input type="button" id="lobbyJoinGameButton" value="Join Game" />
-        </div>
+        <div class="col-6"><input type="text" style="width:300px" id="lobbyJoinGameId" disabled /></div>
+        <div class="col-4"><input type="button" id="lobbyJoinGameButton" value="Join Game" disabled /></div>
     </div>
 </div>
 
@@ -103,11 +90,14 @@
 </div>
 <div class="row">
     <div class="col-12">
-        <p id="gamePulseMessage" />
+        <p id="gamePulseMessage"></p>
     </div>
 </div>
 <div class="row">
-    <div class="col-12">
+    <div class="col-6">
+        <p id="playerJson">{}</p>
+    </div>
+    <div class="col-6">
         <p id="gameJson">{}</p>
     </div>
 </div>
