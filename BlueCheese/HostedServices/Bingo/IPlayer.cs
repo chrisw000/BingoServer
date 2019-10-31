@@ -2,6 +2,6 @@
 {
     public interface IPlayer : IPlayerData
     {
-        bool CheckNumber(int number);
+        bool CheckNumber(int number, int gameRound);
     }
 }

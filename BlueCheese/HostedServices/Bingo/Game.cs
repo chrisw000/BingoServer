@@ -25,7 +25,6 @@ namespace BlueCheese.HostedServices.Bingo
         public int GameRound => _drawnNumbers.Count;
 
         public IEnumerable<IDrawData> Numbers => _allNumbers;
-        public IEnumerable<int> NumbersDrawn => _drawnNumbers;
         public IEnumerable<IPlayerData> Players => _players.Values.ToList();
 
         private bool _isSpawned = false;
@@ -140,13 +139,13 @@ namespace BlueCheese.HostedServices.Bingo
                     var number = _gameNumbers[0];
                     _gameNumbers.RemoveAt(0);
                     _drawnNumbers.Add(number);
-                    _allNumbers[number].IsMatched(number);
+                    _allNumbers[number].IsMatched(number, GameRound);
 
                     var winners = string.Empty;
 
                     foreach (var p in _players)
                     {
-                        if (p.Value.CheckNumber(number))
+                        if (p.Value.CheckNumber(number, GameRound))
                         {
                             _logger.LogDebug("{user} has matched {number}", p.Value.User, _allNumbers[number].Name);
                             await _lobbyHubContext.Clients.Client(p.Value.ConnectionId).LobbyPlayerMessage(this, $"You have matched {_allNumbers[number].Name}").ConfigureAwait(false);

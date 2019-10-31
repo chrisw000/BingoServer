@@ -16,6 +16,5 @@ namespace BlueCheese.HostedServices.Bingo
         int GameRound {get;}
         IEnumerable<IDrawData> Numbers {get;}
         IEnumerable<IPlayerData> Players {get;}
-        IEnumerable<int> NumbersDrawn {get;}
     }
 }
