@@ -17,12 +17,12 @@ namespace BlueCheese.HostedServices.Bingo
             _logger = logger;
         }
 
-        public async Task<IGame> SpawnNewGameAsync(string connectionId, NewGameStarted newGameStarting)
+        public async Task<IGame> SpawnNewGameAsync(NewGameStarted newGameStarting)
         {
             _logger.LogTrace("GameFactory.SpawnNewGame {newGameStarting}", newGameStarting);
 
             var g = _serviceProvider.GetRequiredService<IGame>();
-            await g.SpawnAsync(connectionId, newGameStarting).ConfigureAwait(false);
+            await g.SpawnAsync(newGameStarting).ConfigureAwait(false);
 
             return g;
         }

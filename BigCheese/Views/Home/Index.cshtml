@@ -5,58 +5,59 @@
 <div class="text-center">
     <h1 class="display-4">Big Cheese Server</h1>
 </div>
-<div class="row">
-    <div class="col-6">
-        <ul>
-            <li>Goto the Lobby page...</li>
-            <li>Open 2nd Incognito window on Lobby page</li>
-            <li>Window 1: add a username, Click "Create New Game"</li>
-            <li>Window 2: add a username, copy/paste gameId, Click "Join Game"</li>
-        </ul>
-        <ul>
-            <li>To hook up to React App...</li>
-            <li>See BigCheese/Views/Lobby/Index.cshtml</li>
-            <li>See BigCheese/wwwroot/js/lobby.js</li>
-            <li>requires BigCheese/wwwroot/js/dist/browser/signalr.js</li>
-            <li>There is a TypeScript version</li>
-        </ul>
-        <p>REST API</p>
-        <ul>
-            <li><a href="/api/game">/api/game</a> - list all games</li>
-            <li><a href="/api/game/WaitingForPlayers">/api/game/WaitingForPlayers</a> - list WaitingForPlayers games</li>
-            <li><a href="/api/game/Playing">/api/game/Playing</a> - list Playing games</li>
-            <li><a href="/api/game/Ended">/api/game/Ended</a> - list Ended games</li>
-        </ul>
-    </div>
-</div>
 
-<div class="container">
-    <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-2">User</div>
-        <div class="col-4"><input type="text" id="userInput" /></div>
-    </div>
-    <div class="row">
-        <div class="col-2">Message</div>
-        <div class="col-4"><input type="text" id="messageInput" /></div>
-    </div>
-    <div class="row">&nbsp;</div>
-    <div class="row">
-        <div class="col-6">
-            <input type="button" id="sendButton" value="Send Message" />
+            <div class="col-6">
+                <ul>
+                    <li>Goto the Lobby page...</li>
+                    <li>Open 2nd Incognito window on Lobby page</li>
+                    <li>Window 1: add a username, Click "Create New Game"</li>
+                    <li>Window 2: add a username, copy/paste gameId, Click "Join Game"</li>
+                </ul>
+                <ul>
+                    <li>To hook up to React App...</li>
+                    <li>See BigCheese/Views/Lobby/Index.cshtml</li>
+                    <li>See BigCheese/wwwroot/js/lobby.js</li>
+                    <li>requires BigCheese/wwwroot/js/dist/browser/signalr.js</li>
+                    <li>There is a TypeScript version</li>
+                </ul>
+                <p>REST API</p>
+                <ul>
+                    <li><a href="/api/game">/api/game</a> - list all games</li>
+                    <li><a href="/api/game/WaitingForPlayers">/api/game/WaitingForPlayers</a> - list WaitingForPlayers games</li>
+                    <li><a href="/api/game/Playing">/api/game/Playing</a> - list Playing games</li>
+                    <li><a href="/api/game/Ended">/api/game/Ended</a> - list Ended games</li>
+                </ul>
+            </div>
         </div>
-    </div>
-</div>
-<div class="row">
-    <div class="col-12">
-        <hr />
-    </div>
-</div>
-<div class="row">
-    <div class="col-6">
-        <ul id="messagesList"></ul>
-    </div>
-</div>
 
-<script src="~/js/signalr/dist/browser/signalr.js"></script>
-<script src="~/js/chat.js"></script>
+        <div class="container">
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <div class="col-2">User</div>
+                <div class="col-4"><input type="text" id="userInput" /></div>
+            </div>
+            <div class="row">
+                <div class="col-2">Message</div>
+                <div class="col-4"><input type="text" id="messageInput" /></div>
+            </div>
+            <div class="row">&nbsp;</div>
+            <div class="row">
+                <div class="col-6">
+                    <input type="button" id="sendButton" value="Send Message" />
+                </div>
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-12">
+                <hr />
+            </div>
+        </div>
+        <div class="row">
+            <div class="col-6">
+                <ul id="messagesList"></ul>
+            </div>
+        </div>
+
+        <script src="~/js/signalr/dist/browser/signalr.js"></script>
+        <script src="~/js/chat.js"></script>

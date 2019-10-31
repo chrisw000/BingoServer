@@ -1,5 +1,4 @@
 ﻿using System;
-using System.Collections.Generic;
 using System.Linq;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
@@ -21,7 +20,7 @@ namespace BigCheese.Api
 
         [HttpGet]
         public IActionResult Get()
-        {
+        {      
             // for some reason this only returns values if there is a .Where clause on it....
             return Ok(_gameManager.GameData.Where(g=>g.StartedUtc > DateTime.MinValue));
         }
