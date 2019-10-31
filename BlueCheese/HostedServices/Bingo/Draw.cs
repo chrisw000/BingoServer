@@ -8,6 +8,8 @@ namespace BlueCheese.HostedServices.Bingo
         public string Name { get; }
         public bool Matched { get; private set; }
 
+        public int? GameRound {get; private set; }
+
         public Draw(int number, string name)
         {
             Number = number;
@@ -15,12 +17,13 @@ namespace BlueCheese.HostedServices.Bingo
             Matched = false;
         }
 
-        public bool IsMatched(int number)
+        public bool IsMatched(int number, int gameRound)
         {
             if (number == Number)
             {
                 if (Matched) throw new InvalidOperationException(nameof(number), new Exception("You can't pick the same number twice innit"));
                 Matched = true;
+                GameRound = gameRound;
                 return true;
             }
 

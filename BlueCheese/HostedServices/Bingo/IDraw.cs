@@ -2,6 +2,6 @@
 {
     public interface IDraw : IDrawData
     {
-        bool IsMatched(int number);
+        bool IsMatched(int number, int drawnOrder);
     }
 }

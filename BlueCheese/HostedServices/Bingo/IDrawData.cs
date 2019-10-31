@@ -5,5 +5,6 @@
         int Number {get;}
         string Name {get;}
         bool Matched {get;}
+        int? GameRound {get;}
     }
 }

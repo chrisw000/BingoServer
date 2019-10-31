@@ -33,12 +33,12 @@ namespace BlueCheese.HostedServices.Bingo
                             select new Draw(i, numbers[i].Name));
         }
 
-        public bool CheckNumber(int number) {
+        public bool CheckNumber(int number, int gameRound) {
 
             //return _draws.Exists(d=>d.IsMatched(number));
             foreach(var d in _draws)
             {
-                if (d.IsMatched(number))
+                if (d.IsMatched(number, gameRound))
                 {
                     return true;
                 }
