@@ -8,6 +8,7 @@ using System.Collections.Generic;
 using System.Collections.Concurrent;
 using System.Linq;
 using System.Globalization;
+using BlueCheese.HostedServices.Bingo.Contracts;
 
 namespace BlueCheese.HostedServices.Bingo
 {

@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using BlueCheese.HostedServices.Bingo;
+using BlueCheese.HostedServices.Bingo.Contracts;
 
 namespace BigCheese.Api
 {

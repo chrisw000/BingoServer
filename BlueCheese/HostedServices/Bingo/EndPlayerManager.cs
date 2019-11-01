@@ -1,4 +1,5 @@
-﻿using System;
+﻿using BlueCheese.HostedServices.Bingo.Contracts;
+using System;
 using System.Collections.Concurrent;
 
 namespace BlueCheese.HostedServices.Bingo

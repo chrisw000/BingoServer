@@ -1,4 +1,5 @@
-﻿using BlueCheese.Hubs;
+﻿using BlueCheese.HostedServices.Bingo.Contracts;
+using BlueCheese.Hubs;
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.Extensions.Logging;
 using System;

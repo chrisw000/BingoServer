@@ -13,6 +13,7 @@ using BlueCheese;
 using Serilog;
 using System;
 using Microsoft.AspNetCore.Http;
+using BlueCheese.HostedServices.Bingo.Contracts;
 
 namespace BigCheese
 {

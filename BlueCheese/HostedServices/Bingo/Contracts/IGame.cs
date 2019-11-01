@@ -1,7 +1,7 @@
 ﻿using BlueCheese.Hubs;
 using System.Threading.Tasks;
 
-namespace BlueCheese.HostedServices.Bingo
+namespace BlueCheese.HostedServices.Bingo.Contracts
 {
     public interface IGame : IGameData
     {

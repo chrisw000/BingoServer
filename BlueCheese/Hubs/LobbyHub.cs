@@ -1,4 +1,5 @@
 ﻿using BlueCheese.HostedServices.Bingo;
+using BlueCheese.HostedServices.Bingo.Contracts;
 using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 using System;

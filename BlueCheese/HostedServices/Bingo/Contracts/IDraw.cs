@@ -1,4 +1,4 @@
-﻿namespace BlueCheese.HostedServices.Bingo
+﻿namespace BlueCheese.HostedServices.Bingo.Contracts
 {
     public interface IDraw : IDrawData
     {
