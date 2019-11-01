@@ -1,6 +1,5 @@
 ﻿using System;
 using System.Collections.Concurrent;
-using BlueCheese.Hubs;
 
 namespace BlueCheese.HostedServices.Bingo
 {
@@ -9,13 +8,10 @@ namespace BlueCheese.HostedServices.Bingo
         private readonly ConcurrentDictionary<Guid, EndPlayerInfo> _players = new ConcurrentDictionary<Guid, EndPlayerInfo>();
         private readonly ConcurrentDictionary<string, Guid> _playerUsernames = new ConcurrentDictionary<string, Guid>();
 
-        public EndPlayerManager()
-        {
-
-        }
-
         public IEndPlayerInfo SpawnEndPlayer(string username)
         {
+            if(string.IsNullOrEmpty(username)) throw new ArgumentNullException(nameof(username));
+
             var id = Guid.NewGuid();
             var endPlayerInfo = new EndPlayerInfo(id, username);
 
@@ -68,12 +64,14 @@ namespace BlueCheese.HostedServices.Bingo
             return true;
         }
 
-        public void StoreConnection(JoinGame joinGame)
+        public IEndPlayerInfo StoreConnection(IEndPlayerInfo endPlayerInfo)
         {
-            if(joinGame==null) throw new ArgumentNullException(nameof(joinGame));
+            if(endPlayerInfo==null) throw new ArgumentNullException(nameof(endPlayerInfo));
 
-            _players.TryGetValue(joinGame.PlayerId, out var player);
-            player.ConnectionId = joinGame.ConnectionId;
+            _players.TryGetValue(endPlayerInfo.PlayerId, out var player);
+            player.ConnectionId = endPlayerInfo.ConnectionId;
+
+            return player;
         }
     }
 }

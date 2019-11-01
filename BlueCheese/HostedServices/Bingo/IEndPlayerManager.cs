@@ -6,7 +6,7 @@ namespace BlueCheese.HostedServices.Bingo
     {
         IEndPlayerInfo SpawnEndPlayer(string username);
         bool CheckUserAgainstId(IHoldUserIdentity userIdentity);
-        void StoreConnection(JoinGame joinGame);
+        IEndPlayerInfo StoreConnection(IEndPlayerInfo endPlayerInfo);
         IEndPlayerInfo GetByPlayerId(Guid playerId);
     }
 }

@@ -37,5 +37,16 @@ namespace BlueCheese.Hubs
 
             await _gameManager.JoinGameAsync(joinGame).ConfigureAwait(false);
         }
+
+        public async Task ClientReconnected(IEndPlayerInfo endPlayerInfo)
+        {
+            if(endPlayerInfo==null) throw new ArgumentNullException(nameof(endPlayerInfo));
+            endPlayerInfo.ConnectionId = Context.ConnectionId;
+
+            _logger.LogInformation("LobbyHub.ClientReconnected {@endPlayerInfo}", endPlayerInfo);
+
+            await _gameManager.ClientReconnectedAsync(endPlayerInfo).ConfigureAwait(false);
+        }
+
     }
 }

@@ -1,11 +1,7 @@
-﻿using System;
-
-namespace BlueCheese.HostedServices.Bingo
-{
-    public interface IEndPlayerInfo
+﻿namespace BlueCheese.HostedServices.Bingo
+{ 
+    public interface IEndPlayerInfo : IHoldUserIdentity
     {
-        Guid PlayerId {get;}
-        string User {get;}
         string ConnectionId {get; set;}
     }
 }

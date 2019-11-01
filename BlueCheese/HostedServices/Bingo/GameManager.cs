@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using BlueCheese.Hubs;
-using EnsureThat;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.Extensions.Logging;
 
 namespace BlueCheese.HostedServices.Bingo
@@ -13,6 +13,7 @@ namespace BlueCheese.HostedServices.Bingo
     {
         private readonly GameFactory _gameFactory;
         private readonly IEndPlayerManager _endPlayerManager;
+        private readonly IHubContext<LobbyHub, ILobbyHub> _lobbyHubContext;
         private readonly ILogger<GameManager> _logger;
 
         private readonly ConcurrentDictionary<Guid, IGame> _games = new ConcurrentDictionary<Guid, IGame>();
@@ -20,11 +21,12 @@ namespace BlueCheese.HostedServices.Bingo
         public IEnumerable<IGameData> GameData => _games.Values.OrderBy(d=>d.StartedUtc).ToList();
 
         public int Delay => (1000 * 1 * 1); // 1 second polling
-        
-        public GameManager(GameFactory gameFactory, IEndPlayerManager endPlayerManager, ILogger<GameManager> logger)
+
+        public GameManager(GameFactory gameFactory, IEndPlayerManager endPlayerManager, IHubContext<LobbyHub, ILobbyHub> lobbyHubContext, ILogger<GameManager> logger)
         {
             _gameFactory = gameFactory;
             _endPlayerManager = endPlayerManager;
+            _lobbyHubContext = lobbyHubContext;
             _logger = logger;
         }
 
@@ -74,15 +76,41 @@ namespace BlueCheese.HostedServices.Bingo
             if(!_endPlayerManager.CheckUserAgainstId(joinGame))
                 return; // TODO - return some error state?
 
-            _endPlayerManager.StoreConnection(joinGame);
+            var endPlayerInfo = _endPlayerManager.StoreConnection(joinGame);
 
             if(_games.TryGetValue(joinGame.GameId, out var game))
             {
-                await game.AddPlayerAsync(joinGame).ConfigureAwait(false);
+                await game.AddPlayerAsync(endPlayerInfo).ConfigureAwait(false);
             }
             else
             {
                 _logger.LogWarning("GameManager.JoinGame unable to join game {@joinGame}", joinGame);
+            }
+        }
+
+        public async Task ClientReconnectedAsync(IEndPlayerInfo endPlayerInfo)
+        {
+            if(endPlayerInfo==null) throw new ArgumentNullException(nameof(endPlayerInfo));
+
+            _logger.LogTrace("GameManager.ClientReconnected {@endPlayerInfo}", endPlayerInfo);
+
+            if(!_endPlayerManager.CheckUserAgainstId(endPlayerInfo))
+                return; // TODO - return some error state?
+
+            foreach (var (g, p) in from g in _games.Values
+                                   from p in g.Players.Where(p => p.PlayerId == endPlayerInfo.PlayerId)
+                                   select (g, p))
+            {
+                await _lobbyHubContext.Groups.RemoveFromGroupAsync(((IEndPlayerInfo)p).ConnectionId, g.GameId.ToString()).ConfigureAwait(false);
+            }
+
+            _endPlayerManager.StoreConnection(endPlayerInfo);
+
+            foreach (var (g, p) in from g in _games.Values
+                                   from p in g.Players.Where(p => p.PlayerId == endPlayerInfo.PlayerId)
+                                   select (g, p))
+            {
+                await _lobbyHubContext.Groups.AddToGroupAsync(((IEndPlayerInfo)p).ConnectionId, g.GameId.ToString()).ConfigureAwait(false);
             }
         }
     }

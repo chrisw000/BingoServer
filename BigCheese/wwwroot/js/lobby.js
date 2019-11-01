@@ -1,6 +1,10 @@
 ﻿"use strict";
 
-var gameConnection = new signalR.HubConnectionBuilder().withUrl("/hub/lobby").build();
+const gameConnection = new signalR.HubConnectionBuilder()
+                            .withUrl("/hub/lobby")
+                            .withAutomaticReconnect([0, 1000, 1000, 2000, 3000, 5000, 8000, 13000, 21000, 34000, null])
+                            .configureLogging(signalR.LogLevel.Information)
+                            .build();
 
 function Lobby () {
     this.player =  null;
@@ -71,7 +75,9 @@ gameConnection.on("LobbyUpdateGame", function (gameData, message) {
     document.getElementById("gamePulseMessage").innerHTML = message;
 });
 
-gameConnection.start().then(function () {
+//------------------------------------------------------------------------------------
+
+start().then(function () {
     if (document.getElementById("lobbyJoinGameId").value) {
         document.getElementById("lobbyJoinGameButton").disabled = false;
     } else {
@@ -80,6 +86,44 @@ gameConnection.start().then(function () {
 }).catch(function (err) {
     return console.error(err.toString());
 });
+
+async function start() {
+    try {
+        await gameConnection.start();
+        console.assert(gameConnection.state === signalR.HubConnectionState.Connected);
+        console.log("connected");
+    } catch (err) {
+        console.assert(gameConnection.state === signalR.HubConnectionState.Disconnected);
+        console.log(err);
+        setTimeout(() => start(), 5000);
+    }
+};
+
+gameConnection.onreconnecting((error) => {
+    console.assert(gameConnection.state === signalR.HubConnectionState.Reconnecting);
+
+    addMessageToUIQueue(`Connection lost due to error "${error}". Reconnecting.`);
+});
+
+gameConnection.onreconnected((connectionId) => {
+    console.assert(gameConnection.state === signalR.HubConnectionState.Connected);
+
+    addMessageToUIQueue(`Connection reestablished. Connected with connectionId "${connectionId}".`);
+
+    gameConnection.invoke("ClientReconnected", lobby.player).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+
+});
+
+gameConnection.onclose((error) => {
+    console.assert(gameConnection.state === signalR.HubConnectionState.Disconnected);
+
+    addMessageToUIQueue(`Connection closed due to error "${error}". Try refreshing this page to restart the connection.`);
+});
+
+//------------------------------------------------------------------------------------
 
 document.getElementById("lobbyNewGameButton").addEventListener("click", function (event) {
 
