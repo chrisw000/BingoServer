@@ -10,5 +10,7 @@ namespace BlueCheese.Hubs
         Task LobbyUpdateGame(IGameData gameData, string message);
         Task LobbyPlayerMessage(IGameData gameData, string message);
         Task LobbyPlayerNumbers(IGameData gameData, IPlayerData player);
+
+        Task ReceiveChatMessage(IHoldUserIdentity user, string message);
     }
 }

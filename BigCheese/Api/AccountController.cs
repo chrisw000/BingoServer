@@ -35,7 +35,7 @@ namespace BigCheese.Api
                 return Ok(endPlayer);
             }
 
-            return Ok(_endPlayerManager.GetByPlayerId(HttpContext.Session.Get<Guid>(Cheese)));
+            return Ok(_endPlayerManager.GetBy(HttpContext.Session.Get<Guid>(Cheese)));
         }
     }
 }

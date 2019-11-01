@@ -7,6 +7,8 @@ namespace BlueCheese.HostedServices.Bingo.Contracts
         IEndPlayerInfo SpawnEndPlayer(string username);
         bool CheckUserAgainstId(IHoldUserIdentity userIdentity);
         IEndPlayerInfo StoreConnection(IEndPlayerInfo endPlayerInfo);
-        IEndPlayerInfo GetByPlayerId(Guid playerId);
+        IEndPlayerInfo GetBy(Guid playerId);
+        IEndPlayerInfo GetBy(IHoldUserIdentity userIdentity);
+        IEndPlayerInfo GetBy(string connectionId);
     }
 }

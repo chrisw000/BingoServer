@@ -48,7 +48,7 @@ gameConnection.on("LobbyUserJoinedGame", function (gameData, message) {
 
     lobby.joinGame(gameData);
 
-    addMessageToUIQueue(user + " joined game " + gameData.gameId + " > " + message);
+    addMessageToUIQueue(message);
 });
 
 gameConnection.on("LobbyPlayerNumbers", function (gameData, player) {
@@ -191,9 +191,15 @@ document.getElementById("softLogOnButton").addEventListener("click", function (e
 
           lobby.newPlayer(JSON.parse(this.responseText));
 
+            if (lobby.player.user != user) {
+                console.warn("restoring original player from session");
+                document.getElementById("lobbyUsername").value = lobby.player.user;
+            }
+
           document.getElementById("softLogOnButton").disabled = true;
           document.getElementById("lobbyUsername").disabled = true;
-          document.getElementById("newGateDataEntry").style.display = "block";    
+          document.getElementById("newGameDataEntry").style.display = "block";  
+          document.getElementById("chatDataEntry").style.display = "block"; 
             
           document.getElementById("lobbyJoinGameButton").disabled = !(lobby.player && !lobby.game);
         }
@@ -201,6 +207,47 @@ document.getElementById("softLogOnButton").addEventListener("click", function (e
     xhttp.open("POST", "/api/account", true);
     xhttp.setRequestHeader("Content-type", "application/x-www-form-urlencoded");
     xhttp.send("lobbyUsername="+user).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+
+//------------------------------------------------------------------------------------
+// Chat
+//------------------------------------------------------------------------------------
+
+gameConnection.on("ReceiveChatMessage", function (fromUserIdentity, message) {
+    var msg = message.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    var encodedMsg = fromUserIdentity.user + " says " + msg;
+    var li = document.createElement("li");
+    li.textContent = encodedMsg;
+    document.getElementById("messagesList").appendChild(li);
+});
+
+document.getElementById("sendUserButton").addEventListener("click", function (event) {
+    var message = document.getElementById("messageInput").value;
+    // Hardcorded to player 1 in game
+    var toId = {
+            user: game.players[1].user,
+            playerId: game.players[1].playerId
+        };
+    gameConnection.invoke("SendUserMessage", toId, message).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+
+document.getElementById("sendGameButton").addEventListener("click", function (event) {
+    var message = document.getElementById("messageInput").value;
+    gameConnection.invoke("SendGameMessage", lobby.game.gameId, message).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
+});
+
+document.getElementById("sendGlobalButton").addEventListener("click", function (event) {
+    var message = document.getElementById("messageInput").value;
+    gameConnection.invoke("SendGlobalMessage", message).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();

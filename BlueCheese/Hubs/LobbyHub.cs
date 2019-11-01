@@ -11,14 +11,52 @@ namespace BlueCheese.Hubs
     public class LobbyHub : Hub<ILobbyHub>
     {
         private readonly IGameManager _gameManager;
+        private readonly IEndPlayerManager _endPlayerManager;
         private readonly ILogger<LobbyHub> _logger;
 
-        public LobbyHub(IGameManager gameManager, ILogger<LobbyHub> logger)
+        public LobbyHub(IGameManager gameManager, IEndPlayerManager endPlayerManager, ILogger<LobbyHub> logger)
         {
             _gameManager = gameManager;
+            _endPlayerManager = endPlayerManager;
             _logger = logger;
         }
 
+        #region Chat
+        // Send to user
+        public async Task SendDirectMessage(IHoldUserIdentity toUser, string message)
+        {
+            if (_endPlayerManager.CheckUserAgainstId(toUser))
+            { 
+                var fromUser = _endPlayerManager.GetBy(Context.ConnectionId);
+                if(fromUser!=null)
+                {
+                    await Clients.Client(_endPlayerManager.GetBy(toUser).ConnectionId).ReceiveChatMessage(fromUser as IHoldUserIdentity, message).ConfigureAwait(false);
+                }
+            }
+        }
+
+        // Send to game
+        public async Task SendGameMessage(Guid gameId, string message)
+        {
+            var fromUser = _endPlayerManager.GetBy(Context.ConnectionId);
+            if(fromUser!=null)
+            {
+                await Clients.OthersInGroup(gameId.ToString()).ReceiveChatMessage(fromUser as IHoldUserIdentity, message).ConfigureAwait(false);
+            }
+        }
+
+        // Send to all
+        public async Task SendGlobalMessage(string message)
+        {
+            var fromUser = _endPlayerManager.GetBy(Context.ConnectionId);
+            if(fromUser!=null)
+            {
+                await Clients.All.ReceiveChatMessage(fromUser as IHoldUserIdentity, message).ConfigureAwait(false);
+            }
+        }
+        #endregion
+
+        #region Game
         public async Task ClientStartedNewGame(NewGameStarted newGame)
         {
             if(newGame==null) throw new ArgumentNullException(nameof(newGame));
@@ -38,7 +76,9 @@ namespace BlueCheese.Hubs
 
             await _gameManager.JoinGameAsync(joinGame).ConfigureAwait(false);
         }
+        #endregion
 
+        #region Connection
         public async Task ClientReconnected(IEndPlayerInfo endPlayerInfo)
         {
             if(endPlayerInfo==null) throw new ArgumentNullException(nameof(endPlayerInfo));
@@ -48,6 +88,7 @@ namespace BlueCheese.Hubs
 
             await _gameManager.ClientReconnectedAsync(endPlayerInfo).ConfigureAwait(false);
         }
+        #endregion
 
     }
 }
