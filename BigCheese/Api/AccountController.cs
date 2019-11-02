@@ -20,11 +20,16 @@ namespace BigCheese.Api
         }
 
         [HttpPost]
-        public IActionResult Post(string lobbyUsername)
-        {    
+        public IActionResult Post(string username)
+        {
             if (HttpContext.Session.Get<Guid>(Cheese) == default)
             {
-                var endPlayer = _endPlayerManager.SpawnEndPlayer(lobbyUsername);
+                if(string.IsNullOrEmpty(username))
+                {
+                    return BadRequest("username not supplied.");
+                }
+
+                var endPlayer = _endPlayerManager.SpawnEndPlayer(username);
 
                 if(endPlayer==null) 
                 {

@@ -1,9 +1,9 @@
 ﻿@{
-    ViewData["Title"] = "Big Cheese Game Lobby Page";
+    ViewData["Title"] = "Buzzword Bingo Server Lobby";
 }
 
 <div class="text-center">
-    <h1 class="display-3">Big Cheese Game Lobby</h1>
+    <h1 class="display-3">Buzzword Bingo Server Lobby</h1>
 </div>
 
 <div class="container">
@@ -41,7 +41,7 @@
     </div>
     <div class="row">&nbsp;</div>
     <div class="row">
-        <div class="col-4"><input type="button" id="sendUserButton" value="Send Direct Message" /></div>
+        <div class="col-4"><input type="button" id="sendDirectButton" value="Send Direct Message" /></div>
         <div class="col-4"><input type="button" id="sendGameButton" value="Send Game Message" /></div>
         <div class="col-4"><input type="button" id="sendGlobalButton" value="Send Global Message" /></div>
     </div>
@@ -126,15 +126,26 @@
 </div>
 <div class="row">
     <div class="col-6">
-        <p id="playerJson">{}</p>
+        <ul id="chatList"><li>Chat:</li></ul>
     </div>
     <div class="col-6">
-        <p id="gameJson">{}</p>
+        <ul id="messagesList"><li>Game Updates:</li></ul>
     </div>
 </div>
 <div class="row">
-    <div class="col-12">
-        <ul id="messagesList"></ul>
+    <div class="col-6">
+        <p>Player JSON:</p>
+    </div>
+    <div class="col-6">
+        <p>Game JSON:</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <p id="playerJson"></p>
+    </div>
+    <div class="col-6">
+        <p id="gameJson"></p>
     </div>
 </div>
 

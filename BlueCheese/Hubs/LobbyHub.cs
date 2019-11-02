@@ -23,35 +23,57 @@ namespace BlueCheese.Hubs
 
         #region Chat
         // Send to user
-        public async Task SendDirectMessage(IHoldUserIdentity toUser, string message)
+        public async Task SendDirectMessage(string user, Guid id, string message)
         {
+            var toUser = new EndPlayerInfo(id, user) as IHoldUserIdentity;
+
             if (_endPlayerManager.CheckUserAgainstId(toUser))
             { 
-                var fromUser = _endPlayerManager.GetBy(Context.ConnectionId);
-                if(fromUser!=null)
+                var fromEndPlayer = _endPlayerManager.GetBy(Context.ConnectionId);
+                if(fromEndPlayer==null)
                 {
-                    await Clients.Client(_endPlayerManager.GetBy(toUser).ConnectionId).ReceiveChatMessage(fromUser as IHoldUserIdentity, message).ConfigureAwait(false);
+                    _logger.LogWarning("{class}.{method} cannot find fromEndPlayer for ConnectionId {connectionId}"
+                        , nameof(LobbyHub), nameof(SendDirectMessage), Context.ConnectionId);
                 }
+                else
+                {
+                    await Clients.Client(_endPlayerManager.GetBy(toUser).ConnectionId).ReceiveChatMessage(fromEndPlayer as IHoldUserIdentity, message).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                _logger.LogWarning("{class}.{method} cannot find toEndPlayer for {toUser}"
+                    , nameof(LobbyHub), nameof(SendDirectMessage), toUser);
             }
         }
 
         // Send to game
         public async Task SendGameMessage(Guid gameId, string message)
         {
-            var fromUser = _endPlayerManager.GetBy(Context.ConnectionId);
-            if(fromUser!=null)
+            var fromEndPlayer = _endPlayerManager.GetBy(Context.ConnectionId);
+            if(fromEndPlayer==null)
             {
-                await Clients.OthersInGroup(gameId.ToString()).ReceiveChatMessage(fromUser as IHoldUserIdentity, message).ConfigureAwait(false);
+                _logger.LogWarning("{class}.{method} cannot find fromEndPlayer for ConnectionId {connectionId}"
+                    , nameof(LobbyHub), nameof(SendDirectMessage), Context.ConnectionId);
+            }
+            else
+            {
+                await Clients.Group(gameId.ToString()).ReceiveChatMessage(fromEndPlayer as IHoldUserIdentity, message).ConfigureAwait(false);
             }
         }
 
         // Send to all
         public async Task SendGlobalMessage(string message)
         {
-            var fromUser = _endPlayerManager.GetBy(Context.ConnectionId);
-            if(fromUser!=null)
+            var fromEndPlayer = _endPlayerManager.GetBy(Context.ConnectionId);
+            if(fromEndPlayer==null)
             {
-                await Clients.All.ReceiveChatMessage(fromUser as IHoldUserIdentity, message).ConfigureAwait(false);
+                _logger.LogWarning("{class}.{method} cannot find fromEndPlayer for ConnectionId {connectionId}"
+                    , nameof(LobbyHub), nameof(SendDirectMessage), Context.ConnectionId);
+            }
+            else
+            {
+                await Clients.All.ReceiveChatMessage(fromEndPlayer as IHoldUserIdentity, message).ConfigureAwait(false);
             }
         }
         #endregion
