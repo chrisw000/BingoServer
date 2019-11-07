@@ -7,7 +7,7 @@ namespace BlueCheese.HostedServices.Bingo
 {
     public class EndPlayerManager : IEndPlayerManager
     {
-        private ILogger<EndPlayerManager> _logger;
+        private readonly ILogger<EndPlayerManager> _logger;
 
         private readonly ConcurrentDictionary<string, Guid> _connections = new ConcurrentDictionary<string, Guid>();
         private readonly ConcurrentDictionary<Guid, EndPlayerInfo> _players = new ConcurrentDictionary<Guid, EndPlayerInfo>();
@@ -22,8 +22,7 @@ namespace BlueCheese.HostedServices.Bingo
         {
             if(string.IsNullOrEmpty(username)) throw new ArgumentNullException(nameof(username));
 
-            var id = Guid.NewGuid();
-            var endPlayerInfo = new EndPlayerInfo(id, username);
+            var endPlayerInfo = new EndPlayerInfo(username);
 
             if(_playerUsernames.TryAdd(username, endPlayerInfo.PlayerId))
             {
@@ -34,20 +33,31 @@ namespace BlueCheese.HostedServices.Bingo
                     {
                         return endPlayerInfo;  
                     }
+                    else
+                    {
+                        _logger.LogWarning("Cannot spawn end player {@endPlayerInfo} - duplicate connectionId", endPlayerInfo);
+                    }
                     _players.TryRemove(endPlayerInfo.PlayerId, out _);
                 }
-
+                else
+                {
+                    _logger.LogWarning("Cannot spawn end player {@endPlayerInfo} - duplicate playerId", endPlayerInfo);
+                }
                 _playerUsernames.TryRemove(username, out _);
             }
-
-            _logger.LogWarning("Cannot spawn end player {@endPlayerInfo}", endPlayerInfo);
+            else
+            {
+                _logger.LogWarning("Cannot spawn end player {@endPlayerInfo} - duplicate username", endPlayerInfo);
+            }           
             
             return null;
         }
 
         public bool CheckUserAgainstId(IHoldUserIdentity userIdentity)
         {
-            if(userIdentity==null) throw new ArgumentNullException(nameof(userIdentity));
+            if(userIdentity==null) return false;
+            if(string.IsNullOrEmpty(userIdentity.User)) return false;
+            if(userIdentity.PlayerId == Guid.Empty) return false;
 
             // Move to object to track these?
             // Check the user / playerid combo
@@ -88,17 +98,28 @@ namespace BlueCheese.HostedServices.Bingo
                         return player;
                     }
                 }
-                _logger.LogWarning("Cannot find cached connection to store connection {@endPlayerInfo}", endPlayerInfo);
+                _logger.LogWarning("Cannot find cached _connections to store connection {@endPlayerInfo}", endPlayerInfo);
             }
             else
             {
-                _logger.LogWarning("Cannot find cached _player to store connection {@endPlayerInfo}", endPlayerInfo);
+                _logger.LogWarning("Cannot find cached _players to store connection {@endPlayerInfo}", endPlayerInfo);
             }
 
             return player;
         }
 
-        public IEndPlayerInfo GetBy(Guid playerId) => _players.TryGetValue(playerId, out var p) ? p : null;
+        public IEndPlayerInfo GetBy(Guid playerId) 
+        {
+            if(_players.TryGetValue(playerId, out var endPlayerInfo))
+            {
+                return endPlayerInfo;
+            }
+
+            _logger.LogDebug("{class}.{method} cannot get by playerId {playerId}"
+                , nameof(EndPlayerManager), nameof(GetBy), playerId);
+
+            return null;
+        }
 
 
         public IEndPlayerInfo GetBy(IHoldUserIdentity userIdentity)
@@ -110,10 +131,17 @@ namespace BlueCheese.HostedServices.Bingo
 
         public IEndPlayerInfo GetBy(string connectionId)
         {
+            if(string.IsNullOrEmpty(connectionId))
+                throw new ArgumentException("Must supply a connectionId", nameof(connectionId));
+
             if(_connections.TryGetValue(connectionId, out var id))
             {
                 return GetBy(id);
             }
+
+            _logger.LogDebug("{class}.{method} cannot get by connectionId {connectionId}"
+                    , nameof(EndPlayerManager), nameof(GetBy), connectionId);
+
             return null;
         }
     }

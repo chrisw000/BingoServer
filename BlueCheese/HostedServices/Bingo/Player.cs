@@ -5,6 +5,7 @@ using System.Linq;
 
 namespace BlueCheese.HostedServices.Bingo
 {
+
     public class Player : IPlayer
     {
         private readonly IEndPlayerInfo _userIdentity;
@@ -14,12 +15,16 @@ namespace BlueCheese.HostedServices.Bingo
         public IEnumerable<IDrawData> Draws => _draws;
 
         public IEndPlayerInfo Info => _userIdentity;
+        IHoldUserIdentity IPlayerData.Info => Info as IHoldUserIdentity;
 
-        //TODO: remove these 2
-        public Guid PlayerId => _userIdentity.PlayerId;
-        public string User => _userIdentity.User;
+        public PlayerStatus Status {get; internal set;}
 
-        public bool HasWon => _cheeseCount == _draws.Count(d=>d.Matched==true);
+        public Player(IEndPlayerInfo userIdentity)
+        {
+            if(userIdentity==null) throw new ArgumentNullException(nameof(userIdentity));
+            _userIdentity = userIdentity;
+            Status = PlayerStatus.Spectator;
+        }
 
         public Player(IEndPlayerInfo userIdentity, int cheeseCount, NumberCollection numbers)
         {
@@ -29,6 +34,7 @@ namespace BlueCheese.HostedServices.Bingo
             if(cheeseCount<=0) throw new ArgumentOutOfRangeException(nameof(cheeseCount), "You need some cheese in the game to be a player.");
 
             _userIdentity = userIdentity;
+            Status = PlayerStatus.Playing;
 
             _cheeseCount = cheeseCount;
             _draws.AddRange(from i in ThreadSafeRandom.Pick(cheeseCount, numbers.CountInUse)
@@ -37,11 +43,14 @@ namespace BlueCheese.HostedServices.Bingo
 
         public bool CheckNumber(int number, int gameRound) {
 
-            //return _draws.Exists(d=>d.IsMatched(number));
             foreach(var d in _draws)
             {
                 if (d.IsMatched(number, gameRound))
                 {
+                    if(_cheeseCount == _draws.Count(d=>d.Matched==true))
+                    {
+                        Status = PlayerStatus.Winner;
+                    }
                     return true;
                 }
             }

@@ -13,5 +13,10 @@ namespace BlueCheese.Hubs
         public int CheeseCount {get;set;}
 
         internal string ConnectionId {get;set;}
+
+        public NewGameStarted()
+        {
+            // Required for default serialization
+        }
     }
 }

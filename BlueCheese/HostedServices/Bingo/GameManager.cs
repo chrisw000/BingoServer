@@ -99,7 +99,7 @@ namespace BlueCheese.HostedServices.Bingo
                 return; // TODO - return some error state?
 
             foreach (var (g, p) in from g in _games.Values
-                                   from p in g.Players.Where(p => p.PlayerId == endPlayerInfo.PlayerId)
+                                   from p in g.Players.Where(p => p.Info.PlayerId == endPlayerInfo.PlayerId)
                                    select (g, p))
             {
                 await _lobbyHubContext.Groups.RemoveFromGroupAsync(((IEndPlayerInfo)p).ConnectionId, g.GameId.ToString()).ConfigureAwait(false);
@@ -108,7 +108,7 @@ namespace BlueCheese.HostedServices.Bingo
             _endPlayerManager.StoreConnection(endPlayerInfo);
 
             foreach (var (g, p) in from g in _games.Values
-                                   from p in g.Players.Where(p => p.PlayerId == endPlayerInfo.PlayerId)
+                                   from p in g.Players.Where(p => p.Info.PlayerId == endPlayerInfo.PlayerId)
                                    select (g, p))
             {
                 await _lobbyHubContext.Groups.AddToGroupAsync(((IEndPlayerInfo)p).ConnectionId, g.GameId.ToString()).ConfigureAwait(false);
