@@ -1,9 +1,9 @@
 ﻿@{
-    ViewData["Title"] = "Big Cheese Game Lobby Page";
+    ViewData["Title"] = "Buzzword Bingo Server Lobby";
 }
 
 <div class="text-center">
-    <h1 class="display-4">Big Cheese Game Lobby</h1>
+    <h1 class="display-3">Buzzword Bingo Server Lobby</h1>
 </div>
 
 <div class="container">
@@ -21,8 +21,39 @@
     </div>
 </div>
 
+<div class="container" id="chatDataEntry" style="display:none">
+    <div class="text-center">
+        <h2 class="display-4">Demo Chat</h2>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="col-12">
+        <ul>
+            <li>You need to put in a username / get an ID before using.</li>
+            <li>Create a game with at least 3 players... because...</li>
+            <li>"Send Direct Message" is hardcoded in this javascript to send to player 1 in the game - so that needs to exist</li>
+            <li>"Send Game Message" requires a game id - so a game needs to exist</li>
+            <li>Need to change the fake log-on to also call SignalR to finalise connections - currently done when joining a game</li>
+        </ul>
+    </div>
+    <div class="row">
+        <div class="col-2">Message</div>
+        <div class="col-8"><input type="text" id="messageInput" style="width:100%" maxlength="144" /></div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-4"><input type="button" id="sendDirectButton" value="Send Direct Message" /></div>
+        <div class="col-4"><input type="button" id="sendGameButton" value="Send Game Message" /></div>
+        <div class="col-4"><input type="button" id="sendGlobalButton" value="Send Global Message" /></div>
+    </div>
+    <div class="row">&nbsp;</div>
+    <div class="row">
+        <div class="col-12">
+            <hr />
+        </div>
+    </div>
+</div>
 
-<div class="container" id="newGateDataEntry" style="display:none">
+<div class="container" id="newGameDataEntry" style="display:none">
     <div class="row">&nbsp;</div>
     <div class="row">
         <div class="col-4">Name</div>
@@ -95,15 +126,26 @@
 </div>
 <div class="row">
     <div class="col-6">
-        <p id="playerJson">{}</p>
+        <ul id="chatList"><li>Chat:</li></ul>
     </div>
     <div class="col-6">
-        <p id="gameJson">{}</p>
+        <ul id="messagesList"><li>Game Updates:</li></ul>
     </div>
 </div>
 <div class="row">
-    <div class="col-12">
-        <ul id="messagesList"></ul>
+    <div class="col-6">
+        <p>Player JSON:</p>
+    </div>
+    <div class="col-6">
+        <p>Game JSON:</p>
+    </div>
+</div>
+<div class="row">
+    <div class="col-6">
+        <p id="playerJson"></p>
+    </div>
+    <div class="col-6">
+        <p id="gameJson"></p>
     </div>
 </div>
 

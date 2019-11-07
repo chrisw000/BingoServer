@@ -13,6 +13,7 @@ using BlueCheese;
 using Serilog;
 using System;
 using Microsoft.AspNetCore.Http;
+using BlueCheese.HostedServices.Bingo.Contracts;
 
 namespace BigCheese
 {
@@ -110,7 +111,6 @@ namespace BigCheese
                     name: "default",
                     pattern: "{controller=Home}/{action=Index}/{id?}");
                 endpoints.MapRazorPages();
-                endpoints.MapHub<BlueCheese.Hubs.ChatHub>("/hub/chat");
                 endpoints.MapHub<BlueCheese.Hubs.LobbyHub>("/hub/lobby");
             });
         }

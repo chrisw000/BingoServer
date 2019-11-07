@@ -1,7 +1,7 @@
 ﻿using System;
 using Microsoft.AspNetCore.Mvc;
 using Microsoft.Extensions.Logging;
-using BlueCheese.HostedServices.Bingo;
+using BlueCheese.HostedServices.Bingo.Contracts;
 
 namespace BigCheese.Api
 {
@@ -20,11 +20,16 @@ namespace BigCheese.Api
         }
 
         [HttpPost]
-        public IActionResult Post(string lobbyUsername)
-        {    
+        public IActionResult Post(string username)
+        {
             if (HttpContext.Session.Get<Guid>(Cheese) == default)
             {
-                var endPlayer = _endPlayerManager.SpawnEndPlayer(lobbyUsername);
+                if(string.IsNullOrEmpty(username))
+                {
+                    return BadRequest("username not supplied.");
+                }
+
+                var endPlayer = _endPlayerManager.SpawnEndPlayer(username);
 
                 if(endPlayer==null) 
                 {
@@ -35,7 +40,7 @@ namespace BigCheese.Api
                 return Ok(endPlayer);
             }
 
-            return Ok(_endPlayerManager.GetByPlayerId(HttpContext.Session.Get<Guid>(Cheese)));
+            return Ok(_endPlayerManager.GetBy(HttpContext.Session.Get<Guid>(Cheese)));
         }
     }
 }

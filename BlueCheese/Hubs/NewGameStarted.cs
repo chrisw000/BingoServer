@@ -1,4 +1,4 @@
-﻿using BlueCheese.HostedServices.Bingo;
+﻿using BlueCheese.HostedServices.Bingo.Contracts;
 using System;
 
 namespace BlueCheese.Hubs

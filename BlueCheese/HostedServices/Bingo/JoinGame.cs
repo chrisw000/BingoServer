@@ -1,14 +1,10 @@
-﻿using System;
+﻿using BlueCheese.HostedServices.Bingo.Contracts;
+using System;
 
 namespace BlueCheese.HostedServices.Bingo
 {
-    public interface IHoldUserIdentity
-    {
-        string User {get;set;}
-        Guid PlayerId {get;set;}
-    }
 
-    public class JoinGame : IHoldUserIdentity
+    public class JoinGame : IEndPlayerInfo
     {
         public string ConnectionId {get;set;}
         public string User {get;set;}
