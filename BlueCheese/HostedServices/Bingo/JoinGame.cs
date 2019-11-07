@@ -12,6 +12,11 @@ namespace BlueCheese.HostedServices.Bingo
         public Guid PlayerId {get;set;}
         public Guid GameId {get;set;}
 
+        public JoinGame()
+        {
+            // Required for default serialization
+        }
+
         public JoinGame(NewGameStarted newGameStarted, Guid gameId)
         {
             if(newGameStarted == null) throw new ArgumentNullException(nameof(newGameStarted));

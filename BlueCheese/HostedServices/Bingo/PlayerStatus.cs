@@ -2,9 +2,9 @@
 {
     public enum PlayerStatus
     {
-        Playing,
-        Spectator,
-        Winner,
-        Loser
+        Spectator = 0,
+        Playing = 1,
+        Loser = 2,
+        Winner = 3
     }
 }

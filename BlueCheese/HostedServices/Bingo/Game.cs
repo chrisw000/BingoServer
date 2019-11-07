@@ -81,7 +81,7 @@ namespace BlueCheese.HostedServices.Bingo
         {
             _logger.LogInformation("Game.AddPlayer {@endPlayerInfo}", endPlayerInfo);
 
-            var newPlayer = (Status ==GameStatus.Playing)
+            var newPlayer = (Status ==GameStatus.WaitingForPlayers)
                 ? new Player(endPlayerInfo, CheeseCount, _allNumbers) 
                 : new Player(endPlayerInfo);
 
