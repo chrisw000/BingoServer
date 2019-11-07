@@ -71,13 +71,8 @@ namespace BlueCheese.HostedServices.Bingo
 
             _logger.LogInformation("Spawning game {gameId} started on {connectionId} with {@newGameStarting}", GameId, newGameStarting.ConnectionId, newGameStarting);
 
-            var joinGame = new JoinGame()
-            {
-                User = newGameStarting.User,
-                ConnectionId = newGameStarting.ConnectionId,
-                GameId = GameId
-            };
-            
+            var joinGame = new JoinGame(newGameStarting, GameId);
+           
             await AddPlayerAsync(joinGame).ConfigureAwait(false);
             await _lobbyHubContext.Clients.All.LobbyNewGameHasStarted(this).ConfigureAwait(false);
         }
@@ -86,21 +81,29 @@ namespace BlueCheese.HostedServices.Bingo
         {
             _logger.LogInformation("Game.AddPlayer {@endPlayerInfo}", endPlayerInfo);
 
-            var newPlayer = new Player(endPlayerInfo, CheeseCount, _allNumbers);
+            var newPlayer = (Status ==GameStatus.WaitingForPlayers)
+                ? new Player(endPlayerInfo, CheeseCount, _allNumbers) 
+                : new Player(endPlayerInfo);
 
             if (_players.TryAdd(endPlayerInfo.PlayerId, newPlayer))
             {
+                if(Status==GameStatus.WaitingForPlayers && _players.Count >= Size)
+                    Status = GameStatus.Playing;
+
                 await _lobbyHubContext.Groups.AddToGroupAsync(endPlayerInfo.ConnectionId, GameId.ToString()).ConfigureAwait(false);
 
-                // Tell the player their numbers
-                await _lobbyHubContext.Clients.Client(endPlayerInfo.ConnectionId).LobbyPlayerNumbers(this, newPlayer as IPlayerData).ConfigureAwait(false);
-                // Tell everyone else in the game the text message version
-                await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), endPlayerInfo.ConnectionId).LobbyUserJoinedGame(this, $"{newPlayer.User} joined game with numbers {string.Join(",", newPlayer.Draws.Select(d=>d.Number))}").ConfigureAwait(false);
+                if(newPlayer.Status == PlayerStatus.Playing)
+                {
+                    // Tell the player their numbers
+                    await _lobbyHubContext.Clients.Client(endPlayerInfo.ConnectionId).LobbyPlayerNumbers(this, newPlayer as IPlayerData).ConfigureAwait(false);
+                    // Tell everyone else in the game the text message version
+                    await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), endPlayerInfo.ConnectionId).LobbyUserJoinedGame(this, $"{newPlayer.Info.User} joined game with numbers {string.Join(",", newPlayer.Draws.Select(d => d.Number))}").ConfigureAwait(false);
+                }
             }
             else
             {
                 _logger.LogWarning("Unable to add player {user} on {connectionId} to {gameId}",
-                                   newPlayer.User,
+                                   newPlayer.Info.User,
                                    endPlayerInfo.ConnectionId,
                                    GameId);
             }
@@ -125,11 +128,6 @@ namespace BlueCheese.HostedServices.Bingo
             switch (Status)
             {
                 case GameStatus.WaitingForPlayers:
-                    if (_players.Count == Size)
-                    {
-                        Status = GameStatus.Playing;
-                        goto case GameStatus.Playing; // YES! a goto statement for full cheese.
-                    }
                     msg = $"Waiting... got {_players.Keys.Count}/{Size} players...";
                     _logger.LogDebug(msg);
                     break;
@@ -148,18 +146,23 @@ namespace BlueCheese.HostedServices.Bingo
                     {
                         if (p.Value.CheckNumber(number, GameRound))
                         {
-                            _logger.LogDebug("{user} has matched {number}", p.Value.User, _allNumbers[number].Name);
+                            _logger.LogDebug("{user} has matched {number}", p.Value.Info.User, _allNumbers[number].Name);
                             await _lobbyHubContext.Clients.Client(p.Value.Info.ConnectionId).LobbyPlayerMessage(this, $"You have matched {_allNumbers[number].Name}").ConfigureAwait(false);
                         }
 
-                        if (p.Value.HasWon)
+                        if (p.Value.Status==PlayerStatus.Winner)
                         {
-                            winners += $"{p.Value.User}! ";
+                            winners += $"{p.Value.Info.User}! ";
                         }
                     }
 
                     if (winners.Length > 0)
                     {
+                        foreach (var p in _players.Where(p=>p.Value.Status==PlayerStatus.Playing))
+                        {
+                            p.Value.Status = PlayerStatus.Loser;
+                        }
+
                         winners = $"There are winners! {winners}";
                         Status = GameStatus.Ended;
                         EndedUtc = DateTime.UtcNow;
@@ -167,16 +170,17 @@ namespace BlueCheese.HostedServices.Bingo
                     }
 
                     msg = $"-> {_allNumbers[number].Name} {winners}";
-
+                    _logger.LogDebug(msg);
                     break;
 
                 default:
                     msg = $"Unknown game status {Status:G}";
+                    _logger.LogError(msg);
                     break;
             }
 
             await _lobbyHubContext.Clients.Group(GameId.ToString())
-                .LobbyUpdateGame(this, $"time: {(int)(DateTime.UtcNow - StartedUtc).TotalSeconds} {msg}")
+                .LobbyUpdateGame(this, $"{msg}")
                 .ConfigureAwait(false);
 
             return false;
