@@ -88,6 +88,27 @@ namespace BlueCheese.HostedServices.Bingo
                 _logger.LogWarning("GameManager.JoinGame unable to join game {@joinGame}", joinGame);
             }
         }
+        
+        public async Task PushSelectionAsync(PushSelection pushSelection)
+        {
+            if(pushSelection==null) throw new ArgumentNullException(nameof(pushSelection));
+
+            _logger.LogTrace("GameManager.PushSelection {@pushSelection}", pushSelection);
+
+            var endPlayerInfo = _endPlayerManager.GetBy(pushSelection.ConnectionId);
+
+            if(endPlayerInfo==null)
+                return; // TODO - return some error state?
+
+            if(_games.TryGetValue(pushSelection.GameId, out var game))
+            {
+                await game.PushSelectionAsync(endPlayerInfo, pushSelection.Draw).ConfigureAwait(false);
+            }
+            else
+            {
+                _logger.LogWarning("GameManager.PushSelection unable to find game {@pushSelection}", pushSelection);
+            }
+        }
 
         public async Task ClientReconnectedAsync(IEndPlayerInfo endPlayerInfo)
         {

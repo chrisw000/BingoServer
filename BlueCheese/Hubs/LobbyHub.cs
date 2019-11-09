@@ -98,6 +98,16 @@ namespace BlueCheese.Hubs
 
             await _gameManager.JoinGameAsync(joinGame).ConfigureAwait(false);
         }
+
+        public async Task ClientPushSelection(PushSelection pushSelection)
+        {
+            if(pushSelection==null) throw new ArgumentNullException(nameof(pushSelection));
+            pushSelection.ConnectionId = Context.ConnectionId;
+
+            _logger.LogInformation("LobbyHub.ClientPushSelection {@pushSelection}", pushSelection);
+
+            await _gameManager.PushSelectionAsync(pushSelection).ConfigureAwait(false);
+        }
         #endregion
 
         #region Connection

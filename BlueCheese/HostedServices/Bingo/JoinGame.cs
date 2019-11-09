@@ -4,7 +4,6 @@ using System;
 
 namespace BlueCheese.HostedServices.Bingo
 {
-
     public class JoinGame : IEndPlayerInfo
     {
         public string ConnectionId {get;set;}

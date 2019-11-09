@@ -46,19 +46,23 @@ gameConnection.on("LobbyNewGameHasStarted", function (gameData) {
 
 gameConnection.on("LobbyUserJoinedGame", function (gameData, message) {
 
-    lobby.joinGame(gameData);
-
+    lobby.updateGame(gameData);
     addMessageToUIQueue(message);
+
 });
 
 gameConnection.on("LobbyPlayerNumbers", function (gameData, player) {
 
     lobby.joinGame(gameData);
+    
+    if (lobby.game.mode == 2) {
+        addGameMode2PushSelectionEvents();
+    }
 
     document.getElementById("lobbyNewGameButton").disabled = true;
     document.getElementById("lobbyJoinGameButton").disabled = true;
 
-    document.getElementById("playerJSON").innerHTML = JSON.stringify(player);
+    document.getElementById("playerJson").innerHTML = JSON.stringify(player);
 });
 
 gameConnection.on("LobbyPlayerMessage", function (gameData, message) {
@@ -168,9 +172,10 @@ document.getElementById("lobbyJoinGameButton").addEventListener("click", functio
         gameId: gameId
     };
 
-    gameConnection.invoke("ClientJoinedGame", joinGame).catch(function (err) {
-        return console.error(err.toString());
-    });
+    gameConnection.invoke("ClientJoinedGame", joinGame)
+        .catch(function (err) {
+            return console.error(err.toString());
+        });
     event.preventDefault();
 });
 
@@ -178,6 +183,32 @@ function addMessageToUIQueue(message) {
     var li = document.createElement("li");
     li.textContent = message;
     document.getElementById("messagesList").appendChild(li);
+}
+
+//------------------------------------------------------------------------------------
+
+function addGameMode2PushSelectionEvents() {
+
+    document.getElementById("gameMode2DataEntry").style.display = "block";
+    
+    for (var i = 1; i <= 42; i++) {
+        document.getElementById("game_mode2_" + i).addEventListener("click", clientPushSelectionEvent.bind(this, i), false);
+    }
+}
+
+function clientPushSelectionEvent(index) {
+
+    var pushSelection = {
+        draw: index,
+        gameId: lobby.game.gameId
+    };
+
+    console.log('clientPushSelectionEvent: ' + JSON.stringify(pushSelection));
+
+    gameConnection.invoke("ClientPushSelection", pushSelection).catch(function (err) {
+        return console.error(err.toString());
+    });
+    event.preventDefault();
 }
 
 //------------------------------------------------------------------------------------
@@ -193,7 +224,7 @@ document.getElementById("softLogOnButton").addEventListener("click", function (e
           lobby.newPlayer(JSON.parse(this.responseText));
 
         if (lobby.player.user != username) {
-            console.warn("restoring original player from session");
+            console.warn("restoring original player from session: " + lobby.player.user);
             document.getElementById("lobbyUsername").value = lobby.player.user;
         }
 
@@ -226,7 +257,6 @@ gameConnection.on("ReceiveChatMessage", function (fromUserIdentity, message) {
 });
 
 document.getElementById("sendDirectButton").addEventListener("click", function (event) {
-    debugger;
     var message = document.getElementById("messageInput").value;
     // Hardcoded to player 1 in game
     var toId = {

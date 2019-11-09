@@ -34,13 +34,7 @@ namespace BigCheese
 
         public void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<GameFactory>();
-            services.AddTransient<IGame, Game>();
-            services.AddTransient<NumberCollection>();
-            services.AddSingleton<IEndPlayerManager, EndPlayerManager>();
-            services.AddSingleton<IGameManager, GameManager>();
-            services.AddSingleton<ILocalizerByGameMode, LocalizerByGameMode>();
-            services.AddHostedService<HostedService<IGameManager>>();
+            services.ToastBlueCheese();
 
             services.AddDbContext<ApplicationDbContext>(options =>
                 options.UseSqlServer(
