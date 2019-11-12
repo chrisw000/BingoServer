@@ -95,7 +95,7 @@ namespace BlueCheese.HostedServices.Bingo
 
             _logger.LogTrace("GameManager.PushSelection {@pushSelection}", pushSelection);
 
-            var endPlayerInfo = _endPlayerManager.GetBy(pushSelection.ConnectionId);
+            var endPlayerInfo = _endPlayerManager.GetByConnection(pushSelection.ConnectionId);
 
             if(endPlayerInfo==null)
                 return; // TODO - return some error state?

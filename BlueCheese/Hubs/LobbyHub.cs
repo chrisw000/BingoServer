@@ -23,34 +23,33 @@ namespace BlueCheese.Hubs
 
         #region Chat
         // Send to user
-        public async Task SendDirectMessage(string user, Guid id, string message)
+        public async Task SendDirectMessage(string user, string message)
         {
-            var toUser = new EndPlayerInfo(id, user) as IHoldUserIdentity;
+            var toUser = _endPlayerManager.GetByUser(user);
 
-            if (_endPlayerManager.CheckUserAgainstId(toUser))
-            { 
-                var fromEndPlayer = _endPlayerManager.GetBy(Context.ConnectionId);
-                if(fromEndPlayer==null)
-                {
-                    _logger.LogWarning("{class}.{method} cannot find fromEndPlayer for ConnectionId {connectionId}"
-                        , nameof(LobbyHub), nameof(SendDirectMessage), Context.ConnectionId);
-                }
-                else
-                {
-                    await Clients.Client(_endPlayerManager.GetBy(toUser).ConnectionId).ReceiveChatMessage(fromEndPlayer as IHoldUserIdentity, message).ConfigureAwait(false);
-                }
-            }
-            else
+            if (toUser == null)
             {
                 _logger.LogWarning("{class}.{method} cannot find toEndPlayer for {toUser}"
                     , nameof(LobbyHub), nameof(SendDirectMessage), toUser);
+                return;
+            }
+
+            var fromEndPlayer = _endPlayerManager.GetByConnection(Context.ConnectionId);
+            if (fromEndPlayer == null)
+            {
+                _logger.LogWarning("{class}.{method} cannot find fromEndPlayer for ConnectionId {connectionId}"
+                    , nameof(LobbyHub), nameof(SendDirectMessage), Context.ConnectionId);
+            }
+            else
+            {
+                await Clients.Client(_endPlayerManager.GetBy(toUser).ConnectionId).ReceiveChatMessage(fromEndPlayer as IHoldUserIdentity, message).ConfigureAwait(false);
             }
         }
 
         // Send to game
         public async Task SendGameMessage(Guid gameId, string message)
         {
-            var fromEndPlayer = _endPlayerManager.GetBy(Context.ConnectionId);
+            var fromEndPlayer = _endPlayerManager.GetByConnection(Context.ConnectionId);
             if(fromEndPlayer==null)
             {
                 _logger.LogWarning("{class}.{method} cannot find fromEndPlayer for ConnectionId {connectionId}"
@@ -65,7 +64,7 @@ namespace BlueCheese.Hubs
         // Send to all
         public async Task SendGlobalMessage(string message)
         {
-            var fromEndPlayer = _endPlayerManager.GetBy(Context.ConnectionId);
+            var fromEndPlayer = _endPlayerManager.GetByConnection(Context.ConnectionId);
             if(fromEndPlayer==null)
             {
                 _logger.LogWarning("{class}.{method} cannot find fromEndPlayer for ConnectionId {connectionId}"

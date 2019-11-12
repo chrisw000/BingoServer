@@ -258,12 +258,12 @@ gameConnection.on("ReceiveChatMessage", function (fromUserIdentity, message) {
 
 document.getElementById("sendDirectButton").addEventListener("click", function (event) {
     var message = document.getElementById("messageInput").value;
-    // Hardcoded to player 1 in game
-    var toId = {
-            user: lobby.game.players[1].user,
-            playerId: lobby.game.players[1].playerId
-        };
-    gameConnection.invoke("SendDirectMessage", toId.user, toId.playerId, message).catch(function (err) {
+
+    // Hardcoded to send to player slot [1] in game
+    var toUser = lobby.game.players[1].info.user; // TODO this info object will be removed again...
+    alert(toUser);
+
+    gameConnection.invoke("SendDirectMessage", toUser, message).catch(function (err) {
         return console.error(err.toString());
     });
     event.preventDefault();
