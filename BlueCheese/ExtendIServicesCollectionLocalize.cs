@@ -2,11 +2,27 @@
 using Microsoft.Extensions.DependencyInjection;
 using Microsoft.AspNetCore.Localization;
 using System.Globalization;
+using BlueCheese.HostedServices.Bingo;
+using BlueCheese.HostedServices.Bingo.Contracts;
+using BlueCheese.Resources;
+using BlueCheese.HostedServices;
 
 namespace BlueCheese
 {
     public static class ExtendIServicesCollectionLocalize
     {
+        public static void ToastBlueCheese(this IServiceCollection services)
+        {
+            services.AddTransient<GamePassive>();
+            services.AddTransient<GameActive>();
+            services.AddTransient<NumberCollection>();
+            services.AddSingleton<GameFactory>();
+            services.AddSingleton<IEndPlayerManager, EndPlayerManager>();
+            services.AddSingleton<IGameManager, GameManager>();
+            services.AddSingleton<ILocalizerByGameMode, LocalizerByGameMode>();
+            services.AddHostedService<HostedService<IGameManager>>();
+        }
+
         public static void LocalizeBlueCheese(this IServiceCollection services)
         {
             services.AddLocalization(o => o.ResourcesPath = "");

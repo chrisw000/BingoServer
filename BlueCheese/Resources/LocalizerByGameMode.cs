@@ -49,7 +49,7 @@ namespace BlueCheese.Resources
             {
                 GameMode.Bingo => 90,
 
-                GameMode.Cheesy => 45,
+                GameMode.Cheesy => 42,
 
                 GameMode.McCluskyPD => 99,
 

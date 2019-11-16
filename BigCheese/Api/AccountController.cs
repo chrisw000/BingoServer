@@ -23,7 +23,7 @@ namespace BigCheese.Api
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Globalization", "CA1303:Do not pass literals as localized parameters", Justification = "<Pending>")]
         public IActionResult Post(string username)
         {
-            IHoldUserIdentity endPlayer; // don't return the connectionId
+            IHoldUserIdentity userIdentity;
 
             if (HttpContext.Session.Get<Guid>(Cheese) == default)
             {
@@ -37,9 +37,9 @@ namespace BigCheese.Api
                     return BadRequest("username not supplied.");
                 }
 
-                endPlayer = _endPlayerManager.SpawnEndPlayer(username);
+                userIdentity = _endPlayerManager.SpawnEndPlayer(username);
 
-                if (endPlayer == null)
+                if (userIdentity == null)
                 {
                     _logger.LogWarning("{class}.{method} {parameter} unable to spawn player",
                                      nameof(AccountController),
@@ -49,19 +49,19 @@ namespace BigCheese.Api
                     return Forbid();
                 }
 
-                _logger.LogDebug("{class}.{method} {parameter} spawned new player {newPlayer}",
+                _logger.LogDebug("{class}.{method} {parameter} spawned new player for {@userIdentity}",
                                     nameof(AccountController),
                                     nameof(Post),
                                     nameof(username),
-                                    endPlayer);
+                                    userIdentity);
 
-                HttpContext.Session.Set<Guid>(Cheese, endPlayer.PlayerId); 
+                HttpContext.Session.Set<Guid>(Cheese, userIdentity.PlayerId); 
             }
             else
             {
-                endPlayer = _endPlayerManager.GetBy(HttpContext.Session.Get<Guid>(Cheese));
+                userIdentity = _endPlayerManager.GetBy(HttpContext.Session.Get<Guid>(Cheese)).ToHoldUserIdentity();
 
-                if (endPlayer == null)
+                if (userIdentity == null)
                 {
                     _logger.LogWarning("{class}.{method} {parameter} to retrieve player via session id {sessionId}",
                                 nameof(AccountController),
@@ -73,8 +73,8 @@ namespace BigCheese.Api
                     return Forbid();
                 }
             }
-            
-            return Ok(endPlayer as IHoldUserIdentity); 
+
+            return Ok(userIdentity); 
         }
     }
 }

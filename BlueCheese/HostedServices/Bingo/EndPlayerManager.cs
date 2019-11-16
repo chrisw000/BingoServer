@@ -18,7 +18,7 @@ namespace BlueCheese.HostedServices.Bingo
             _logger = logger;
         }
 
-        public IEndPlayerInfo SpawnEndPlayer(string username)
+        public IHoldUserIdentity SpawnEndPlayer(string username)
         {
             if(string.IsNullOrEmpty(username)) throw new ArgumentNullException(nameof(username));
 
@@ -31,7 +31,7 @@ namespace BlueCheese.HostedServices.Bingo
                     if(string.IsNullOrEmpty(endPlayerInfo.ConnectionId) 
                         || _connections.TryAdd(endPlayerInfo.ConnectionId, endPlayerInfo.PlayerId))
                     {
-                        return endPlayerInfo;  
+                        return (HoldUserIdentity)endPlayerInfo;
                     }
                     else
                     {
@@ -108,7 +108,7 @@ namespace BlueCheese.HostedServices.Bingo
             return player;
         }
 
-        public IEndPlayerInfo GetBy(Guid playerId) 
+        public EndPlayerInfo GetBy(Guid playerId) 
         {
             if(_players.TryGetValue(playerId, out var endPlayerInfo))
             {
@@ -121,7 +121,6 @@ namespace BlueCheese.HostedServices.Bingo
             return null;
         }
 
-
         public IEndPlayerInfo GetBy(IHoldUserIdentity userIdentity)
         {
             if(userIdentity==null) throw new ArgumentNullException(nameof(userIdentity));
@@ -129,7 +128,7 @@ namespace BlueCheese.HostedServices.Bingo
             return GetBy(userIdentity.PlayerId);
         }
 
-        public IEndPlayerInfo GetBy(string connectionId)
+        public IEndPlayerInfo GetByConnection(string connectionId)
         {
             if(string.IsNullOrEmpty(connectionId))
                 throw new ArgumentException("Must supply a connectionId", nameof(connectionId));
@@ -141,6 +140,22 @@ namespace BlueCheese.HostedServices.Bingo
 
             _logger.LogDebug("{class}.{method} cannot get by connectionId {connectionId}"
                     , nameof(EndPlayerManager), nameof(GetBy), connectionId);
+
+            return null;
+        }
+
+        public IEndPlayerInfo GetByUser(string user)
+        {
+            if(string.IsNullOrEmpty(user))
+                throw new ArgumentException("Must supply a user", nameof(user));
+
+            if(_playerUsernames.TryGetValue(user, out var id))
+            {
+                return GetBy(id);
+            }
+
+            _logger.LogDebug("{class}.{method} cannot get by user {user}"
+                    , nameof(EndPlayerManager), nameof(GetBy), user);
 
             return null;
         }

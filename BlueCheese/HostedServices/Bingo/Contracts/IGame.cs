@@ -8,5 +8,6 @@ namespace BlueCheese.HostedServices.Bingo.Contracts
         Task<bool> UpdateAsync();
         Task SpawnAsync(NewGameStarted newGameStarting);
         Task AddPlayerAsync(IEndPlayerInfo endPlayerInfo);
+        Task PushSelectionAsync(IEndPlayerInfo endPlayerInfo, int draw);
     }
 }

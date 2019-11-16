@@ -5,8 +5,9 @@ namespace BlueCheese.HostedServices.Bingo
 {
     public class EndPlayerInfo : IEndPlayerInfo
     {
-        public Guid PlayerId {get;private set;}
-        public string User {get;}
+        public string User {get;protected set;}
+        public Guid PlayerId {get;protected set;}
+
         public string ConnectionId {get; set;}
 
         public EndPlayerInfo(string username) : this(Guid.NewGuid(), username)
@@ -20,6 +21,16 @@ namespace BlueCheese.HostedServices.Bingo
 
             User = username;
             PlayerId = playerId;
+        }
+
+        public static implicit operator HoldUserIdentity(EndPlayerInfo info)
+        {
+            return new HoldUserIdentity(info);
+        }
+
+        public HoldUserIdentity ToHoldUserIdentity()
+        {
+            return new HoldUserIdentity(this);
         }
     }
 }

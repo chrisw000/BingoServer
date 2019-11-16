@@ -20,9 +20,21 @@ namespace BlueCheese.HostedServices.Bingo
 
         public async Task<IGame> SpawnNewGameAsync(NewGameStarted newGameStarting)
         {
+            if(newGameStarting==null) throw new ArgumentNullException(nameof(newGameStarting));
+
             _logger.LogTrace("GameFactory.SpawnNewGame {newGameStarting}", newGameStarting);
 
-            var g = _serviceProvider.GetRequiredService<IGame>();
+            IGame g;
+
+            if(newGameStarting.Mode == (int)GameMode.Cheesy)
+            {
+                g = _serviceProvider.GetRequiredService<GamePassive>();
+            }
+            else
+            {
+                g = _serviceProvider.GetRequiredService<GameActive>();
+            }
+
             await g.SpawnAsync(newGameStarting).ConfigureAwait(false);
 
             return g;

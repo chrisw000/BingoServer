@@ -12,41 +12,47 @@ using BlueCheese.HostedServices.Bingo.Contracts;
 
 namespace BlueCheese.HostedServices.Bingo
 {
-    public class Game : IGame
+    public abstract class Game : IGame
     {
         public Guid GameId { get; private set; }
         public DateTime StartedUtc { get; private set; }
-        public DateTime EndedUtc { get; private set; }
+        public DateTime EndedUtc { get; protected set; }
         public string StartedByUser { get; private set; }
         public string Name { get; private set; }
         public int CheeseCount { get; private set; }
         public int Size { get; private set; }
-        public GameStatus Status { get; private set; } = GameStatus.WaitingForPlayers;
+        public GameStatus Status { get; protected set; } = GameStatus.WaitingForPlayers;
         public GameMode Mode {get; private set;}
         public int GameRound => _drawnNumbers.Count;
 
         public IEnumerable<IDrawData> Numbers => _allNumbers;
-        public IEnumerable<IPlayerData> Players => _players.Values.ToList();
+        public IEnumerable<IPlayerData> Players => PlayerDictionary.Values.ToList();
+
+        protected List<int> DrawnNumbers => _drawnNumbers;
+        protected IHubContext<LobbyHub, ILobbyHub> LobbyHubContext => _lobbyHubContext;
+        protected NumberCollection AllNumbers => _allNumbers;
+        protected ILogger<IGame> Logger => _logger;
 
         private bool _isSpawned = false;
 
-        private List<int> _gameNumbers { get; set; }
-        private List<int> _drawnNumbers = new List<int>();
+        private List<int> _drawnNumbers {get;set; } = new List<int>();
+
+        protected ConcurrentDictionary<Guid, Player> PlayerDictionary => _players;
 
         private readonly ConcurrentDictionary<Guid, Player> _players = new ConcurrentDictionary<Guid, Player>();
 
         private readonly IHubContext<LobbyHub, ILobbyHub> _lobbyHubContext;
         private readonly NumberCollection _allNumbers;
-        private readonly ILogger<Game> _logger;
+        private readonly ILogger<IGame> _logger;
 
-        public Game(IHubContext<LobbyHub, ILobbyHub> lobbyHubContext, NumberCollection numbers, ILogger<Game> logger)
+        public Game(IHubContext<LobbyHub, ILobbyHub> lobbyHubContext, NumberCollection numbers, ILogger<IGame> logger)
         {
             _lobbyHubContext = lobbyHubContext;
             _allNumbers = numbers;
             _logger = logger;
         }
 
-        public async Task SpawnAsync(NewGameStarted newGameStarting)
+        public virtual async Task SpawnAsync(NewGameStarted newGameStarting)
         {
             if (newGameStarting == null) throw new ArgumentNullException(nameof(newGameStarting));
             if (_isSpawned) throw new InvalidOperationException($"GameData {GameId} is already Spawned.");
@@ -67,42 +73,41 @@ namespace BlueCheese.HostedServices.Bingo
 
             var callerCultureInfo = new CultureInfo("en-GB"); // TODO persist to setup game culture
             _allNumbers.Generate(Mode, callerCultureInfo);
-            _gameNumbers = ThreadSafeRandom.Pick(_allNumbers.CountInUse, _allNumbers.CountInUse).ToList();
 
-            _logger.LogInformation("Spawning game {gameId} started on {connectionId} with {@newGameStarting}", GameId, newGameStarting.ConnectionId, newGameStarting);
+            Logger.LogInformation("Spawning game {gameId} started on {connectionId} with {@newGameStarting}", GameId, newGameStarting.ConnectionId, newGameStarting);
 
             var joinGame = new JoinGame(newGameStarting, GameId);
            
             await AddPlayerAsync(joinGame).ConfigureAwait(false);
-            await _lobbyHubContext.Clients.All.LobbyNewGameHasStarted(this).ConfigureAwait(false);
+            await LobbyHubContext.Clients.All.LobbyNewGameHasStarted(this).ConfigureAwait(false);
         }
 
         public async Task AddPlayerAsync(IEndPlayerInfo endPlayerInfo)
         {
-            _logger.LogInformation("Game.AddPlayer {@endPlayerInfo}", endPlayerInfo);
+            Logger.LogInformation("Game.AddPlayer {@endPlayerInfo}", endPlayerInfo);
 
             var newPlayer = (Status ==GameStatus.WaitingForPlayers)
                 ? new Player(endPlayerInfo, CheeseCount, _allNumbers) 
                 : new Player(endPlayerInfo);
 
-            if (_players.TryAdd(endPlayerInfo.PlayerId, newPlayer))
+            if (PlayerDictionary.TryAdd(endPlayerInfo.PlayerId, newPlayer))
             {
-                if(Status==GameStatus.WaitingForPlayers && _players.Count >= Size)
+                if(Status==GameStatus.WaitingForPlayers && PlayerDictionary.Count >= Size)
                     Status = GameStatus.Playing;
 
-                await _lobbyHubContext.Groups.AddToGroupAsync(endPlayerInfo.ConnectionId, GameId.ToString()).ConfigureAwait(false);
+                await LobbyHubContext.Groups.AddToGroupAsync(endPlayerInfo.ConnectionId, GameId.ToString()).ConfigureAwait(false);
 
                 if(newPlayer.Status == PlayerStatus.Playing)
                 {
                     // Tell the player their numbers
-                    await _lobbyHubContext.Clients.Client(endPlayerInfo.ConnectionId).LobbyPlayerNumbers(this, newPlayer as IPlayerData).ConfigureAwait(false);
+                    await LobbyHubContext.Clients.Client(endPlayerInfo.ConnectionId).LobbyPlayerNumbers(this, newPlayer as IPlayerData).ConfigureAwait(false);
                     // Tell everyone else in the game the text message version
-                    await _lobbyHubContext.Clients.GroupExcept(GameId.ToString(), endPlayerInfo.ConnectionId).LobbyUserJoinedGame(this, $"{newPlayer.Info.User} joined game with numbers {string.Join(",", newPlayer.Draws.Select(d => d.Number))}").ConfigureAwait(false);
+                    await LobbyHubContext.Clients.GroupExcept(GameId.ToString(), endPlayerInfo.ConnectionId).LobbyUserJoinedGame(this, $"{newPlayer.Info.User} joined game with numbers {string.Join(",", newPlayer.Draws.Select(d => d.Number))}").ConfigureAwait(false);
                 }
             }
             else
             {
-                _logger.LogWarning("Unable to add player {user} on {connectionId} to {gameId}",
+                Logger.LogWarning("Unable to add player {user} on {connectionId} to {gameId}",
                                    newPlayer.Info.User,
                                    endPlayerInfo.ConnectionId,
                                    GameId);
@@ -111,79 +116,85 @@ namespace BlueCheese.HostedServices.Bingo
 
         public async Task<bool> UpdateAsync()
         {
-            _logger.LogDebug("Game.Update called {status:G} round: {round}", Status, GameRound);
+            Logger.LogDebug("Game.Update called {status:G} round: {round}", Status, GameRound);
                 
             if (Status == GameStatus.Ended)
             {
                 var removeGame = (DateTime.UtcNow - EndedUtc).TotalMinutes >= 5;
-                _logger.LogDebug("Game.Ended at {endedUtc}, remove game {removeGame}", EndedUtc, removeGame);
+                Logger.LogDebug("Game.Ended at {endedUtc}, remove game {removeGame}", EndedUtc, removeGame);
 
                 return removeGame;
             }
 
-            _logger.LogInformation("Update {gameId}", GameId);
+            Logger.LogInformation("Update {gameId}", GameId);
 
             string msg;
 
             switch (Status)
             {
                 case GameStatus.WaitingForPlayers:
-                    msg = $"Waiting... got {_players.Keys.Count}/{Size} players...";
-                    _logger.LogDebug(msg);
+                    msg = $"Waiting... got {PlayerDictionary.Keys.Count}/{Size} players...";
+                    Logger.LogDebug(msg);
                     break;
 
                 case GameStatus.Playing:
-                    _gameNumbers.Shuffle();
-
-                    var number = _gameNumbers[0];
-                    _gameNumbers.RemoveAt(0);
-                    _drawnNumbers.Add(number);
-                    _allNumbers[number].IsMatched(number, GameRound);
-
-                    var winners = string.Empty;
-
-                    foreach (var p in _players)
-                    {
-                        if (p.Value.CheckNumber(number, GameRound))
-                        {
-                            _logger.LogDebug("{user} has matched {number}", p.Value.Info.User, _allNumbers[number].Name);
-                            await _lobbyHubContext.Clients.Client(p.Value.Info.ConnectionId).LobbyPlayerMessage(this, $"You have matched {_allNumbers[number].Name}").ConfigureAwait(false);
-                        }
-
-                        if (p.Value.Status==PlayerStatus.Winner)
-                        {
-                            winners += $"{p.Value.Info.User}! ";
-                        }
-                    }
-
-                    if (winners.Length > 0)
-                    {
-                        foreach (var p in _players.Where(p=>p.Value.Status==PlayerStatus.Playing))
-                        {
-                            p.Value.Status = PlayerStatus.Loser;
-                        }
-
-                        winners = $"There are winners! {winners}";
-                        Status = GameStatus.Ended;
-                        EndedUtc = DateTime.UtcNow;
-                        _logger.LogInformation("{status:G} {endUtc} {winners}", Status, EndedUtc, winners);
-                    }
-
-                    msg = $"-> {_allNumbers[number].Name} {winners}";
-                    _logger.LogDebug(msg);
+                    msg = await ActivePlayingAsync().ConfigureAwait(false);
                     break;
 
                 default:
                     msg = $"Unknown game status {Status:G}";
-                    _logger.LogError(msg);
+                    Logger.LogError(msg);
                     break;
             }
 
-            await _lobbyHubContext.Clients.Group(GameId.ToString())
-                .LobbyUpdateGame(this, $"{msg}")
+            await LobbyHubContext.Clients.Group(GameId.ToString())
+                .LobbyUpdateGame(this, msg)
                 .ConfigureAwait(false);
 
             return false;
+        }
+
+        public abstract Task PushSelectionAsync(IEndPlayerInfo endPlayerInfo, int draw);
+
+        protected abstract Task<string> ActivePlayingAsync();
+
+        protected async Task<string> PlayRoundAsync(int number)
+        {
+            DrawnNumbers.Add(number);
+            AllNumbers[number].IsMatched(number, GameRound);
+
+            var winners = string.Empty;
+
+            foreach (var p in PlayerDictionary)
+            {
+                if (p.Value.CheckNumber(number, GameRound))
+                {
+                    Logger.LogDebug("{user} has matched {number}", p.Value.Info.User, AllNumbers[number].Name);
+                    await LobbyHubContext.Clients.Client(p.Value.Info.ConnectionId).LobbyPlayerMessage(this, $"You have matched {AllNumbers[number].Name}").ConfigureAwait(false);
+                }
+
+                if (p.Value.Status==PlayerStatus.Winner)
+                {
+                    winners += $"{p.Value.Info.User}! ";
+                }
+            }
+
+            if (winners.Length > 0)
+            {
+                foreach (var p in PlayerDictionary.Where(p=>p.Value.Status==PlayerStatus.Playing))
+                {
+                    p.Value.Status = PlayerStatus.Loser;
+                }
+
+                winners = $"There are winners! {winners}";
+                Status = GameStatus.Ended;
+                EndedUtc = DateTime.UtcNow;
+                Logger.LogInformation("{status:G} {endUtc} {winners}", Status, EndedUtc, winners);
+            }
+
+            var msg = $"-> {AllNumbers[number].Name} {winners}";
+            Logger.LogDebug(msg);
+            return msg;
         }
     }
 }
