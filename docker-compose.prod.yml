@@ -16,6 +16,7 @@ services:
       - db
     container_name: big-cheese-server
     networks:
+      - proxy-network
       - big-cheese-network
 
   db:
@@ -33,4 +34,7 @@ services:
       - big-cheese-network
 
 networks: 
+  proxy-network:
+    external: true
+    name: proxy-network
   big-cheese-network:
