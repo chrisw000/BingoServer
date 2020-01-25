@@ -1,0 +1,36 @@
+version: "3"
+
+services:
+  server:
+    build: 
+      context: .
+      dockerfile: ./BigCheese/Dockerfile
+    expose:
+      - 80
+    environment:
+      ASPNETCORE_ENVIRONMENT: Development
+      VIRTUAL_HOST: api.cheeseybingo.co.uk
+      LETSENCRYPT_HOST: api.cheeseybingo.co.uk
+      LETSENCRYPT_EMAIL: hello@jackallen.me
+    depends_on:
+      - db
+    container_name: big-cheese-server
+    networks:
+      - big-cheese-network
+
+  db:
+    image: "mcr.microsoft.com/mssql/server"
+    environment:
+      SA_PASSWORD: reallyStrongPwd123
+      ACCEPT_EULA: "Y"
+    ports:
+      - "1433:1433"
+    volumes:
+      - ./db:/var/opt/mssql
+       - /var/opt/mssql/data
+    container_name: big-cheese-db
+    networks:
+      - big-cheese-network
+
+networks: 
+  big-cheese-network:
