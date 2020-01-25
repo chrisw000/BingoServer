@@ -90,15 +90,19 @@ namespace BigCheese
                     .AllowAnyMethod();
                     
                 builder
-                    .SetIsOriginAllowedToAllowWildcardSubdomains()
-                    .WithOrigins("https://.cheeseybingo.co.uk")
+                    .WithOrigins("https://cheeseybingo.co.uk")
                     .AllowCredentials()
                     .AllowAnyHeader()
                     .AllowAnyMethod();
                     
                 builder
-                    .SetIsOriginAllowedToAllowWildcardSubdomains()
-                    .WithOrigins("https://*.cheeseybingo.co.uk")
+                    .WithOrigins("https://www.cheeseybingo.co.uk")
+                    .AllowCredentials()
+                    .AllowAnyHeader()
+                    .AllowAnyMethod();
+                    
+                builder
+                    .WithOrigins("https://bitcheslove.cheeseybingo.co.uk")
                     .AllowCredentials()
                     .AllowAnyHeader()
                     .AllowAnyMethod();
