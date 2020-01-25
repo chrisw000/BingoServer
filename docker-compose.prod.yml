@@ -1,4 +1,4 @@
-version: "3"
+version: "3.7"
 
 services:
   server:
@@ -33,7 +33,7 @@ services:
     networks:
       - big-cheese-network
 
-networks: 
+networks:
   proxy-network:
     external: true
     name: proxy-network
